@@ -1,0 +1,150 @@
+# Rust
+**/target/
+**/*.rs.bk
+*.pdb
+
+# Flutter
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+build/
+.generated_plugins
+app.*.symbols
+app.*.map.json
+.lingua_tmp/
+
+**/macos/Flutter/ephemeral/
+**/macos/Pods/
+**/macos/.generated/
+
+**/ios/Pods/
+**/ios/.symlinks/
+**/ios/Runner.xcworkspace/xcuserdata/
+**/ios/DerivedData/
+
+**/android/.gradle/
+**/android/local.properties
+**/android/app/build/
+
+**/linux/flutter/ephemeral/
+**/windows/flutter/ephemeral/
+
+# SQL / Database
+*.sqlite
+*.sqlite3
+*.db
+*.db3
+*.s3db
+*.sl3
+*.mdf
+*.ldf
+*.ndf
+*.bak
+*.dmp
+*.dump
+*.sql.gz
+*.tar.gz
+*backup*.sql
+temp*.sql
+scratch*.sql
+test_run*.sql
+
+# Exported Data & Reports
+*.csv
+*.tsv
+*.xlsx
+*.xml
+export/
+data_out/
+reports/
+
+# OS
+.AppleDouble
+.LSOverride
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.DS_Store
+
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# IDE
+.vscode/
+!.vscode/extensions.json
+*.code-workspace
+.idea/
+*.iml
+
+[._]*.s[a-v][a-z]
+[._]*.sw[a-p]
+[._]s[a-rt-v][a-z]
+[._]ss[a-gi-z]
+*.swp
+*.swo
+*~
+.netrwhist
+**/*_vimbackup/
+**/*_vimundo/
+.nvim.lua
+.nvimrc
+.exrc
+
+# Security & Credentials
+.env
+.env.*
+! .env.example
+*.pem
+*.key
+*.config
+*.ini
+secret*.sql
+database.json
+credentials/
+
+# Latex
+# Archivos auxiliares de compilación de LaTeX
+*.aux
+*.bcf
+*.fls
+*.fdb_latexmk
+*.idx
+*.ilg
+*.ind
+*.lof
+*.log
+*.lot
+*.out
+*.toc
+*.synctex.gz
+*.synctex.gz(busy)
+*.xdv
+
+# Archivos de Bibliografía (BibTeX / Biber)
+*.bbl
+*.blg
+*.run.xml
+
+# Archivos temporales de presentaciones (Beamer)
+*.nav
+*.snm
+*.vrb
+
+# Paquetes de código (Minted)
+_minted*/
+*.pyg
+
+# Archivo PDF compilado 
+# (Quita el '#' de la siguiente línea si NO quieres que el PDF se suba a GitHub)
+# *.pdf
