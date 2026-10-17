@@ -64,6 +64,7 @@ pub fn obtener_crear_performer(
         "SELECT id_performer FROM performers WHERE name = ?1 AND id_type = ?2"
     )?;
 
+    //Se crea un nuevo ID
     let id_existente: Option<i64> = stmt
         .query_row(params![name, id_type], |row| row.get(0))
         .optional()?;
@@ -71,6 +72,8 @@ pub fn obtener_crear_performer(
     if let Some(id) = id_existente{
         return Ok(id);
     }
+
+    //Se agrega la nueva entrada a la tabla
 
     connection.execute(
         "INSERT INTO performers (id_type, name) VALUES (?1, ?2)", 
@@ -81,6 +84,7 @@ pub fn obtener_crear_performer(
     Ok(connection.last_insert_rowid())
 }
 
+//Método para obtener o crear una persona 
 pub fn obtener_crear_person(
     connection: &mut Connection,
     nombre: &str,
@@ -107,6 +111,30 @@ pub fn obtener_crear_person(
     tx.commit()?;    
 
     Ok(id_person)
+}
+
+pub fn obtener_crear_group(
+    connection: &mut Connection,
+    nombre: &str,
+    start_date: Option<&str>,
+    end_date: Option<&str>,
+) -> Result<i64> {
+
+    //Prácticamente se sigue el mismo razonamiento que con la fn de obtener_crear_person
+
+    let tx = connection.transaction()?;
+
+    let id_group = obtener_crear_performer(&tx, nombre, 1)?;
+
+    tx.execute(
+        "INSERT OR IGNORE INTO groups (id_group, name, start_date, end_date)
+         VALUES (?1, ?2, ?3, ?4)",
+         params![id_group, nombre, start_date, end_date],
+    )?;
+
+    tx.commit()?;
+    Ok(id_group)
+
 }
 
 #[cfg(test)]
@@ -267,6 +295,50 @@ mod test{
 
     }
 
+    #[test]
+    fn prueba_obtener_crear_group() {
+        let mut connection = preparar_db_prueba();
+
+        let id_daft_punk = obtener_crear_group(
+            &mut connection,
+            "Daft Punk",
+            Some("1993"),
+            Some("2021"),
+        ).expect("Error creando el grupo de Daft Punk");
+
+        assert!(id_daft_punk > 0, "El ID debe de ser mayor a 0");
+
+        //Insertar un grupo activo sin fecha de fin 
+        let id_blink = obtener_crear_group(
+            &mut connection,
+            "Blink-182",
+            Some("1992"),
+            None,
+        ).expect("Error al crear el grupo");
+
+        assert_ne!(id_daft_punk, id_blink, "Grupos distintos deben de tener un ID distinto");
+
+        //Comprobamos que si creamos otra entrada con los mismos datos, nos devuelve el mismo ID
+        let prueba_id = obtener_crear_group(
+            &mut connection,
+            "Daft Punk",
+            Some("1993"),
+            Some("2021"),
+        ).expect("Error creando el grupo de Daft Punk");
+
+        assert_eq!(id_daft_punk, prueba_id, "Deben de tener el mismo ID ya id_existente");
+
+        //Verificar que los grupos tengan el id_type de group (1)
+
+        let id_type: i64 = connection
+            .query_row(
+                "SELECT id_type FROM performers WHERE id_performer = ?1",
+                [id_daft_punk],
+                |row| row.get(0)
+        ).unwrap();
+
+        assert_eq!(id_type, 1, "El id en los performers debe de ser 1");
+    }
     //Fn auxiliar para la prueba unitaria
     fn preparar_db_prueba() -> Connection {
         let connection = Connection::open_in_memory().expect("No se puede crear la bse de datos en memoria");
