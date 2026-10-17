@@ -181,6 +181,42 @@ pub fn obtener_crear_album(
     Ok(connection.last_insert_rowid())
 }
 
+pub fn obtener_crear_rola(
+    connection: &mut Connection,
+    id_performer: i64,
+    id_album: i64,
+    path: &str,
+    title: Option<&str>,
+    track: Option<i64>,
+    year: Option<i64>,
+    genre: Option<&str>,
+) -> Result<i64> {
+    
+    //Si el track no tiene título se le asignará como predeterminado Unknown Title
+    let titulo_final = match title {
+        Some(t) if !t.trim().is_empty() => t.trim(),
+        _ =>  "Unknown Track",
+    };
+
+    //Verificar que el track no se encuentre dentro de la tabla 
+    let mut stmt = connection.prepare("SELECT id_rola FROM rolas WHERE path = ?1")?;
+    let id_existente: Option<i64> = stmt
+        .query_row(params![path], |r| r.get(0))
+        .optional()?;
+
+    if let Some(id) = id_existente {
+        return Ok(id);
+    }
+
+    //Si no existe, se agrega el track con el título ya modificado
+    connection.execute(
+        "INSERT INTO rolas (id_performer, id_album, path, title, track, year, genre)
+        VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)",
+        params![id_performer, id_album, path, titulo_final, track, year, genre],
+    )?;
+    
+    Ok(connection.last_insert_rowid())
+}
 
 #[cfg(test)]
 mod test{
@@ -491,7 +527,79 @@ mod test{
         assert_eq!(total_albums, albums_iniciales +2, "Debe de haber dos álbumes adicionales con respecto al álbum por defecto");
     }
 
-    
+    #[test]
+    fn prueba_obtener_crear_rola() {
+        let mut connection = preparar_db_prueba();
+
+        //Creamos un artista y un album
+        let id_performer = obtener_crear_person(
+            &mut connection,
+            "Daft Punk",
+            Some("Daft Punk"),
+            None,
+            Some("1993"),
+            None,
+        ).expect("Error al crear performer");
+
+        let id_album = obtener_crear_album(
+            &mut connection,
+            "/musica/daft_punk/discovery",
+            "Discovery",
+            Some(2001),
+        ).expect("Error al crear álbum");
+
+        //Agregamos un track al álbum
+        //1er Caso, el track sí tiene todos los parámetros
+        let id_rola_1 = obtener_crear_rola(
+            &mut connection,
+            id_performer,
+            id_album,
+            "/musica/daft_punk/01_one_more_time.mp3",
+            Some("One More Time"),
+            Some(1),
+            Some(2001),
+            Some("French House"),
+        ).expect("Error al crear rola con título");
+
+        let titulo_1: String = connection
+            .query_row("SELECT title FROM rolas WHERE id_rola = ?1", [id_rola_1], |r| r.get(0))
+            .unwrap();
+
+        assert_eq!(titulo_1, "One More Time");
+
+        //2ndo Caso, el track no tiene título 
+        let id_rola_3 = obtener_crear_rola(
+            &mut connection,
+            id_performer,
+            id_album,
+            "/musica/daft_punk/03_pista_espacios.mp3",
+            Some("   "), // Cadena en blanco
+            Some(3),
+            None,
+            None,
+        ).expect("Error al crear rola con título de espacios");
+
+        let titulo_3: String = connection
+            .query_row("SELECT title FROM rolas WHERE id_rola = ?1", [id_rola_3], |r| r.get(0))
+            .unwrap();
+
+        assert_eq!(titulo_3, "Unknown Track", "Si el título son espacios en blanco debe guardarse como 'Unknown Track'");
+
+
+        let id_reintento = obtener_crear_rola(
+            &mut connection,
+            id_performer,
+            id_album,
+            "/musica/daft_punk/01_one_more_time.mp3",
+            Some("One More Time"),
+            Some(1),
+            Some(2001),
+            Some("French House"),
+        ).expect("Error al consultar rola existente");
+
+        assert_eq!(id_rola_1, id_reintento, "Debe retornar el ID existente de la rola sin duplicarla");
+}
+
     //Fn auxiliar para la prueba unitaria
     fn preparar_db_prueba() -> Connection {
         let connection = Connection::open_in_memory().expect("No se puede crear la bse de datos en memoria");
