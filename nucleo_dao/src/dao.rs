@@ -66,7 +66,7 @@ pub fn obtener_crear_performer(
 
     //Se crea un nuevo ID
     let id_existente: Option<i64> = stmt
-        .query_row(params![name, id_type], |row| row.get(0))
+        .query_row(params![name, id_type], |r| r.get(0))
         .optional()?;
 
     if let Some(id) = id_existente{
@@ -152,6 +152,36 @@ pub fn obtener_crear_in_group(
     Ok(())
 }
 
+pub fn obtener_crear_album(
+    connection: &mut Connection,
+    path: &str,
+    name: &str,
+    year: Option<i64>,
+) -> Result<i64> {
+
+    //Verificamos que el álbum ya exista por su ruta o su nombre
+    let mut stmt = connection.prepare(
+        "SELECT id_album FROM albums WHERE path = ?1"
+    )?;
+
+    let id_existente: Option<i64> = stmt
+        .query_row(params![path], |r| r.get(0))
+        .optional()?;
+
+    if let Some(id) = id_existente {
+        return Ok(id);
+    }
+
+    //Si no existe entonces insertamos de forma directa el album a la tabla de albums
+    connection.execute(
+        "INSERT INTO albums (path, name, year) VALUES (?1, ?2, ?3)",
+        params![path, name, year]
+    )?;
+
+    Ok(connection.last_insert_rowid())
+}
+
+
 #[cfg(test)]
 mod test{
     use super::*;
@@ -184,7 +214,7 @@ mod test{
         let connection = conectar_db().expect("Fallo en la conexión con la base de datos");
 
         let fk_activadas: i32 = connection
-            .query_row("PRAGMA foreign_keys;", [], |row| row.get(0))
+            .query_row("PRAGMA foreign_keys;", [], |r| r.get(0))
             .expect("No se pudo leer el estado PRAGMA foreign_keys");
 
         println!("[TEST] Estado de las foreign_keys (1 = ON): {}", fk_activadas);
@@ -215,7 +245,7 @@ mod test{
         
         //Verificamos que en la tabla performers solo exista un registro
         let conteo: i64 = connection
-            .query_row("SELECT COUNT(*) FROM performers", [], |row| row.get(0))
+            .query_row("SELECT COUNT(*) FROM performers", [], |r| r.get(0))
             .expect("Error en el conteo de filas");
 
         assert_eq!(conteo, 1, "Debe de haber un solo registro en el SQL");
@@ -273,7 +303,7 @@ mod test{
             .query_row(
                 "SELECT stage_name, real_name, death_date FROM persons WHERE id_person = ?1",
                 [primer_id],
-                |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?)),
+                |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?)),
         ).expect("Debe de existir en la tabla persons");
 
         assert_eq!(stage_name.as_deref(), Some("Martin Garrix"));
@@ -349,7 +379,7 @@ mod test{
             .query_row(
                 "SELECT id_type FROM performers WHERE id_performer = ?1",
                 [id_daft_punk],
-                |row| row.get(0)
+                |r| r.get(0)
         ).unwrap();
 
         assert_eq!(id_type, 1, "El id en los performers debe de ser 1");
@@ -393,6 +423,75 @@ mod test{
         assert!(existe, "La relación debe de existir en la tabla in_group");
     }
 
+    #[test]
+    fn prueba_obtener_crear_album() {
+        let mut connection =  preparar_db_prueba();
+
+        //Obtenemos la cantidad de álbumes totales al inicio (Esto por el album 0 que marca el SQL)
+        let albums_iniciales: i64 = connection
+            .query_row("SELECT COUNT(*) FROM albums", [], |r| r.get(0))
+            .unwrap();
+
+        //Creamos primero un álbum 
+        let primer_album = obtener_crear_album(
+            &mut connection,
+            "/musica/daft_punk/discovery",
+            "Discovery",
+            Some(2001),
+        ).expect("Error al crear el álbum");
+
+        assert!(primer_album > 0, "El id debe de ser un número positivo");
+
+        //verificar que la entrada esté en la tabla albums
+        let (name, year): (String, Option<i64>) = connection
+            .query_row(
+                "SELECT name, year FROM albums WHERE id_album = ?1",
+                [primer_album],
+                |r| Ok((r.get(0)?, r.get(1)?)),
+            ).expect("El álbum debe de existir en la tabla albums");
+
+        assert_eq!(name, "Discovery", "El álbum debe de llamarse Discovery");
+        assert_eq!(year, Some(2001), "El año debe de ser 2001");
+
+        //Verificar la creación de un álbum sin año de lanzamiento 
+        let segundo_album = obtener_crear_album(
+            &mut connection,
+            "/musica/desconocido/album_desconocido",
+            "Album Desconocido",
+            None
+        ).expect("Error al crear el álbum");
+
+        assert_ne!(primer_album, segundo_album, "Álbumes diferentes deben de tener diferente ID");
+
+        //Verificar que el año sea NULL en el segundo álbum
+        let null_year: Option<i64> = connection
+            .query_row(
+                "SELECT year FROM albums WHERE id_album = ?1",
+                [segundo_album],
+                |r| r.get(0),
+            ).unwrap();
+        
+        assert_eq!(null_year, None, "El año debe de ser NULL");
+
+        //Creamos otro "album" con los mismos datos del primero y debe de dar el mismo id
+        let tercer_album = obtener_crear_album(
+            &mut connection,
+            "/musica/daft_punk/discovery",
+            "Discovery",
+            Some(2001),
+        ).expect("Error al crear el álbum");
+
+        assert_eq!(primer_album, tercer_album, "Debe de devolver el mismo Id ya existente");
+
+        //Revisar que en la tabla solamente existan dos entradas
+        let total_albums: i64 = connection
+            .query_row("SELECT COUNT(*) FROM albums", [], |r| r.get(0))
+            .unwrap();
+
+        assert_eq!(total_albums, albums_iniciales +2, "Debe de haber dos álbumes adicionales con respecto al álbum por defecto");
+    }
+
+    
     //Fn auxiliar para la prueba unitaria
     fn preparar_db_prueba() -> Connection {
         let connection = Connection::open_in_memory().expect("No se puede crear la bse de datos en memoria");
