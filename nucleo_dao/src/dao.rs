@@ -55,7 +55,7 @@ pub fn crear_tablas_db (connection: &Connection) -> Result<()> {
 //Métodos para crear obtener o crear performers, persons, groups, in_group, albums, rolas
 pub fn obtener_crear_performer(
     connection: &Connection, 
-    nombre: &str, 
+    name: &str, 
     id_type: i64
 ) -> Result<i64> {
 
@@ -65,7 +65,7 @@ pub fn obtener_crear_performer(
     )?;
 
     let id_existente: Option<i64> = stmt
-        .query_row(params![nombre, id_type], |row| row.get(0))
+        .query_row(params![name, id_type], |row| row.get(0))
         .optional()?;
 
     if let Some(id) = id_existente{
@@ -74,11 +74,39 @@ pub fn obtener_crear_performer(
 
     connection.execute(
         "INSERT INTO performers (id_type, name) VALUES (?1, ?2)", 
-        params![id_type, nombre],
+        params![id_type, name],
     )?;
 
     //Retorno del Id asignado por el SQLite
     Ok(connection.last_insert_rowid())
+}
+
+pub fn obtener_crear_person(
+    connection: &mut Connection,
+    nombre: &str,
+    stage_name: Option<&str>,
+    real_name: Option<&str>,
+    birth_date: Option<&str>,
+    death_date: Option<&str>,
+) -> Result<i64> {
+
+    //creamos a tx para inicializar la transacción para que ambas tablas estén sincronizadas
+    let tx = connection.transaction()?;
+
+    //Ver si está el registro en la tabla performers y que sean además "Persons"
+    let id_person = obtener_crear_performer(&tx, nombre, 0)?;
+
+    //Intenta agregar en la tabla persons, si el parámetro id_persons ya existe,si no, no hace nada
+    tx.execute(
+        "INSERT OR IGNORE INTO persons (id_person, stage_name, real_name, birth_date, death_date)
+         VALUES (?1, ?2, ?3, ?4, ?5)",
+        params![id_person, stage_name, real_name, birth_date, death_date],
+    )?;
+
+    //hace el commit de la transacción 
+    tx.commit()?;    
+
+    Ok(id_person)
 }
 
 #[cfg(test)]
@@ -106,7 +134,6 @@ mod test{
             );
         }
     }
-
 
     //Prueba para ver si funciona que se conecte a la base de datos y a las llaves (foreign keys)
     #[test]
@@ -170,6 +197,76 @@ mod test{
 
     }
 
+    //test para comprobar la función obtener_crear_persona
+    #[test]
+    fn prueba_obtener_crear_person() {
+        let mut connection = preparar_db_prueba();
+
+        //Se registra a la primera persona
+        let primer_id = obtener_crear_person(
+            &mut connection, 
+            "Martin Garrix",
+            Some("Martin Garrix"),
+            Some("Martijn Gerard Garritsen"),
+            Some("May 12, 1996"), 
+            None,
+        ).expect("Fallo en la creación de la persona");
+
+        assert!(primer_id > 0, "El id asignado debe de ser mayor a 0");
+
+        //Se verifica que se inserto bien el primer_id en la tabla performers con id_type = 0
+        let (id_type, nombre_performer): (i64, String) = connection
+            .query_row(
+                "SELECT id_type, name FROM performers WHERE id_performer = ?1",
+                [primer_id],
+                |row| Ok((row.get(0)?, row.get(1)?))
+        ).expect("Debe de existir en la tabla performers");
+
+        assert_eq!(id_type, 0, "El id_type debe de ser 0 (Person)");
+        assert_eq!(nombre_performer, "Martin Garrix");  
+
+        //Verificar si los datos sí fueron insertados en la tabla persons 
+        let (stage_name, real_name, death_date): (Option<String>, Option<String>, Option<String>) = connection
+            .query_row(
+                "SELECT stage_name, real_name, death_date FROM persons WHERE id_person = ?1",
+                [primer_id],
+                |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?)),
+        ).expect("Debe de existir en la tabla persons");
+
+        assert_eq!(stage_name.as_deref(), Some("Martin Garrix"));
+        assert_eq!(real_name.as_deref(), Some("Martijn Gerard Garritsen"));
+        assert_eq!(death_date, None, "El resultado debe de ser NULL");
+
+        //Intentar llamar de nuevo con la misma persona
+        let segundo_id = obtener_crear_person(
+            &mut connection,
+            "Martin Garrix",
+            Some("Martin Garrix"),
+            Some("Martijn Gerard Garritsen"),
+            Some("May 12, 1996"), 
+            None,
+        ).expect("Fallo en la re-consulta de la persona");
+
+        assert_eq!(
+            primer_id, 
+            segundo_id,
+            "Debe de retornar el mismo ID y no un duplicado"
+        );
+
+        //Verificamos que la cantidad de entradas en la tabla persons sea efectivamente, 1
+
+        let total_performers: i64 = connection
+            .query_row("SELECT COUNT(*) FROM performers", [], |r| r.get(0),)
+            .unwrap();
+        let total_persons: i64 = connection
+            .query_row("SELECT COUNT(*) FROM persons", [], |r| r.get(0))
+            .unwrap();
+
+        assert_eq!(total_performers, 1, "Solo debe de existir un solo performer");
+        assert_eq!(total_persons, 1, "Solo debe de existir una sola persona");
+
+    }
+
     //Fn auxiliar para la prueba unitaria
     fn preparar_db_prueba() -> Connection {
         let connection = Connection::open_in_memory().expect("No se puede crear la bse de datos en memoria");
@@ -181,4 +278,5 @@ mod test{
 
         connection
     }
+
 }
