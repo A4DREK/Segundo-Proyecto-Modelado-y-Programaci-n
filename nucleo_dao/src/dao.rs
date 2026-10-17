@@ -4,7 +4,7 @@
  */
 
 use dirs;
-use rusqlite::{Connection, Result, params, OptionalExtension};
+use rusqlite::{params, Connection, Result, OptionalExtension};
 use std::{fs, path::PathBuf};
 
 pub fn obtener_ruta_db () -> Result<PathBuf, String> {
@@ -135,6 +135,21 @@ pub fn obtener_crear_group(
     tx.commit()?;
     Ok(id_group)
 
+}
+
+pub fn obtener_crear_in_group(
+    connection: &Connection,
+    id_person: i64,
+    id_group: i64,
+) -> Result<()> {
+
+    //Se ejecuta la conexión se inserta o se ignora en 
+    connection.execute(
+        "INSERT OR IGNORE into in_group (id_person, id_group) VALUES (?1, ?2)", 
+        params![id_person, id_group],
+    )?;
+
+    Ok(())
 }
 
 #[cfg(test)]
@@ -339,6 +354,45 @@ mod test{
 
         assert_eq!(id_type, 1, "El id en los performers debe de ser 1");
     }
+
+    #[test]
+    fn prueba_obtener_crear_in_group() {
+        let mut connection = preparar_db_prueba();
+
+        //Creamos a una persona (John Lennon)
+        let id_person = obtener_crear_person(
+            &mut connection,
+            "John Lennon",
+            Some("John Lennon"),
+            Some("John Winston Ono Lennon"),
+            Some("Octubre 9 1940"),
+            Some("Diciembre 8 1980"),
+
+        ).expect("Error al crear a la persona");
+
+        //Creamos el grupo (The Beatles)
+        let id_group = obtener_crear_group(
+            &mut connection,
+            "The Beatles",
+            Some("1960"),
+            Some("1969"),
+        ).expect("Error eal crear el grupo");
+
+        //Asociamos a la persona con el grupo
+        obtener_crear_in_group(&connection, id_person, id_group)
+            .expect("Error al relacionar la persona con el grupo");
+
+        //Verificamos que la relación se haya creado de forma exitosa
+        let existe: bool = connection
+            .query_row(
+                "SELECT EXISTS(SELECT 1 FROM in_group WHERE id_person = ?1 AND id_group = ?2)",
+                params![id_person, id_group],
+                |r| r.get(0),
+        ).unwrap();
+
+        assert!(existe, "La relación debe de existir en la tabla in_group");
+    }
+
     //Fn auxiliar para la prueba unitaria
     fn preparar_db_prueba() -> Connection {
         let connection = Connection::open_in_memory().expect("No se puede crear la bse de datos en memoria");
