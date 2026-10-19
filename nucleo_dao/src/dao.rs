@@ -59,6 +59,8 @@ pub fn obtener_crear_performer(
     id_type: i64
 ) -> Result<i64> {
 
+    let final_nombre = verificar_texto(name, "Unknown Performer");
+
     //Revisar si ya existe el performer
     let mut stmt = connection.prepare(
         "SELECT id_performer FROM performers WHERE name = ?1 AND id_type = ?2"
@@ -66,7 +68,7 @@ pub fn obtener_crear_performer(
 
     //Se crea un nuevo ID
     let id_existente: Option<i64> = stmt
-        .query_row(params![name, id_type], |r| r.get(0))
+        .query_row(params![final_nombre, id_type], |r| r.get(0))
         .optional()?;
 
     if let Some(id) = id_existente{
@@ -77,7 +79,7 @@ pub fn obtener_crear_performer(
 
     connection.execute(
         "INSERT INTO performers (id_type, name) VALUES (?1, ?2)", 
-        params![id_type, name],
+        params![id_type, final_nombre],
     )?;
 
     //Retorno del Id asignado por el SQLite
@@ -94,11 +96,13 @@ pub fn obtener_crear_person(
     death_date: Option<&str>,
 ) -> Result<i64> {
 
+    let final_nombre = verificar_texto(nombre, "Unknown Person");
+
     //creamos a tx para inicializar la transacción para que ambas tablas estén sincronizadas
     let tx = connection.transaction()?;
 
     //Ver si está el registro en la tabla performers y que sean además "Persons"
-    let id_person = obtener_crear_performer(&tx, nombre, 0)?;
+    let id_person = obtener_crear_performer(&tx, final_nombre, 0)?;
 
     //Intenta agregar en la tabla persons, si el parámetro id_persons ya existe,si no, no hace nada
     tx.execute(
@@ -120,16 +124,18 @@ pub fn obtener_crear_group(
     end_date: Option<&str>,
 ) -> Result<i64> {
 
+    let final_nombre = verificar_texto(nombre, "Unknown group");
+
     //Prácticamente se sigue el mismo razonamiento que con la fn de obtener_crear_person
 
     let tx = connection.transaction()?;
 
-    let id_group = obtener_crear_performer(&tx, nombre, 1)?;
+    let id_group = obtener_crear_performer(&tx, final_nombre, 1)?;
 
     tx.execute(
         "INSERT OR IGNORE INTO groups (id_group, name, start_date, end_date)
          VALUES (?1, ?2, ?3, ?4)",
-         params![id_group, nombre, start_date, end_date],
+         params![id_group, final_nombre, start_date, end_date],
     )?;
 
     tx.commit()?;
@@ -159,6 +165,8 @@ pub fn obtener_crear_album(
     year: Option<i64>,
 ) -> Result<i64> {
 
+    let final_name = verificar_texto(name, "Unknown Album");
+
     //Verificamos que el álbum ya exista por su ruta o su nombre
     let mut stmt = connection.prepare(
         "SELECT id_album FROM albums WHERE path = ?1"
@@ -175,7 +183,7 @@ pub fn obtener_crear_album(
     //Si no existe entonces insertamos de forma directa el album a la tabla de albums
     connection.execute(
         "INSERT INTO albums (path, name, year) VALUES (?1, ?2, ?3)",
-        params![path, name, year]
+        params![path, final_name, year]
     )?;
 
     Ok(connection.last_insert_rowid())
@@ -218,6 +226,17 @@ pub fn obtener_crear_rola(
     Ok(connection.last_insert_rowid())
 }
 
+
+//Función auxiliar para poder verificar que el título de ya sea, el artista, el track o el álbum no sea ""
+fn verificar_texto<'a>(texto: &'a str, texto_predeterminado: &'static str) -> &'a str {
+
+    if !texto.trim().is_empty() {
+        texto.trim()
+    } else {
+        texto_predeterminado
+    }
+    
+}
 #[cfg(test)]
 mod test{
     use super::*;
@@ -304,6 +323,19 @@ mod test{
             "Dos grupos distintos deben de tener ID's diferentes"
         );
 
+        //se agrega el caso donde el nombre sea la cadena vacía
+        let vacio_id = obtener_crear_performer(&connection, "   ", 0)
+            .expect("Error al crear el performer con nombre vacío");
+
+        let nombre_vacio: String = connection
+            .query_row(
+                "SELECT name FROM performers WHERE id_performer = ?1",
+                [vacio_id],
+                |r| r.get(0),
+            )
+            .expect("Debe de existir el performer con nombre vacío");
+
+        assert_eq!(nombre_vacio, "Unknown Performer", "El nombre vacio debe de ser Unknown Performer");
     }
 
     //test para comprobar la función obtener_crear_persona
