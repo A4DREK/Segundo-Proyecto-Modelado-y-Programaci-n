@@ -40,7 +40,6 @@ pub fn conectar_db() -> Result<Connection, Box<dyn std::error::Error>> {
 
 }
 
-
 /*
  * Se iniciarán con los métodos para poder manipular la base de datos.
  */
@@ -55,7 +54,7 @@ pub fn crear_tablas_db (connection: &Connection) -> Result<()> {
 //Métodos para crear obtener o crear performers, persons, groups, in_group, albums, rolas
 pub fn obtener_crear_performer(
     connection: &Connection, 
-    name: &str, 
+    name: Option<&str>, 
     id_type: i64
 ) -> Result<i64> {
 
@@ -86,10 +85,9 @@ pub fn obtener_crear_performer(
     Ok(connection.last_insert_rowid())
 }
 
-//Método para obtener o crear una persona 
 pub fn obtener_crear_person(
     connection: &mut Connection,
-    nombre: &str,
+    nombre: Option<&str>,
     stage_name: Option<&str>,
     real_name: Option<&str>,
     birth_date: Option<&str>,
@@ -102,12 +100,12 @@ pub fn obtener_crear_person(
     let tx = connection.transaction()?;
 
     //Ver si está el registro en la tabla performers y que sean además "Persons"
-    let id_person = obtener_crear_performer(&tx, final_nombre, 0)?;
+    let id_person = obtener_crear_performer(&tx, Some(final_nombre), 0)?;
 
     //Intenta agregar en la tabla persons, si el parámetro id_persons ya existe,si no, no hace nada
     tx.execute(
         "INSERT OR IGNORE INTO persons (id_person, stage_name, real_name, birth_date, death_date)
-         VALUES (?1, ?2, ?3, ?4, ?5)",
+        VALUES (?1, ?2, ?3, ?4, ?5)",
         params![id_person, stage_name, real_name, birth_date, death_date],
     )?;
 
@@ -119,7 +117,7 @@ pub fn obtener_crear_person(
 
 pub fn obtener_crear_group(
     connection: &mut Connection,
-    nombre: &str,
+    nombre: Option<&str>,
     start_date: Option<&str>,
     end_date: Option<&str>,
 ) -> Result<i64> {
@@ -130,7 +128,7 @@ pub fn obtener_crear_group(
 
     let tx = connection.transaction()?;
 
-    let id_group = obtener_crear_performer(&tx, final_nombre, 1)?;
+    let id_group = obtener_crear_performer(&tx, Some(final_nombre), 1)?;
 
     tx.execute(
         "INSERT OR IGNORE INTO groups (id_group, name, start_date, end_date)
@@ -161,7 +159,7 @@ pub fn obtener_crear_in_group(
 pub fn obtener_crear_album(
     connection: &mut Connection,
     path: &str,
-    name: &str,
+    name: Option<&str>,
     year: Option<i64>,
 ) -> Result<i64> {
 
@@ -226,17 +224,33 @@ pub fn obtener_crear_rola(
     Ok(connection.last_insert_rowid())
 }
 
+//Métodos para poder modificar las entradas de las tablas
+pub fn modificar_performers(
+    connection: &Connection,
+    id_performer: i64,
+    nuevo_nombre: Option<&str>,
+) -> Result<bool> {
+
+    let nombre_final = verificar_texto(nuevo_nombre, "Unknown Performer");
+
+    let filas_modificadas = connection.execute(
+        "UPDATE performers SET name = ?1 WHERE id_performer = ?2",
+        params![nombre_final, id_performer],
+    )?;
+
+    Ok(filas_modificadas > 0)
+}
 
 //Función auxiliar para poder verificar que el título de ya sea, el artista, el track o el álbum no sea ""
-fn verificar_texto<'a>(texto: &'a str, texto_predeterminado: &'static str) -> &'a str {
+fn verificar_texto<'a>(texto: Option<&'a str>, texto_predeterminado: &'static str) -> &'a str {
 
-    if !texto.trim().is_empty() {
-        texto.trim()
-    } else {
-        texto_predeterminado
+    match texto {
+        Some(t) if !t.trim().is_empty() => t.trim(),
+        _ => texto_predeterminado,
     }
     
 }
+
 #[cfg(test)]
 mod test{
     use super::*;
@@ -285,13 +299,13 @@ mod test{
         let connection = preparar_db_prueba();
 
         //Se crea a un primer performer
-        let primer_id = obtener_crear_performer(&connection, "Latin Mafia", 1)
+        let primer_id = obtener_crear_performer(&connection, Some("Latin Mafia"), 1)
             .expect("Error al crear el performer por primera vez");
 
         assert!(primer_id > 0, "El id generado debe de ser mayor a 0");
 
         //Se intenta obtener el mismo performer con el mismo nombre y tipo
-        let segundo_id = obtener_crear_performer(&connection, "Latin Mafia", 1)
+        let segundo_id = obtener_crear_performer(&connection, Some("Latin Mafia"), 1)
             .expect("Error al consultar un performer existente");
 
         assert_eq!(
@@ -306,7 +320,7 @@ mod test{
         assert_eq!(conteo, 1, "Debe de haber un solo registro en el SQL");
         
         //Creamos otro performer y verificamos que tengan ID distinto
-        let tercer_id = obtener_crear_performer(&connection, "Martin Garrix", 0)
+        let tercer_id = obtener_crear_performer(&connection, Some("Martin Garrix"), 0)
             .expect("Error al crear un nuevo performer");
 
         assert_ne!(
@@ -315,7 +329,7 @@ mod test{
         );
 
         //Comprobamos que dos datos con el mismo value, tengan registros distintos
-        let cuarto_id = obtener_crear_performer(&connection, "Los Tigres del Norte", 1)
+        let cuarto_id = obtener_crear_performer(&connection, Some("Los Tigres del Norte"), 1)
             .expect("Error al crear el performer");
 
         assert_ne!(
@@ -324,7 +338,7 @@ mod test{
         );
 
         //se agrega el caso donde el nombre sea la cadena vacía
-        let vacio_id = obtener_crear_performer(&connection, "   ", 0)
+        let vacio_id = obtener_crear_performer(&connection, Some("   "), 0)
             .expect("Error al crear el performer con nombre vacío");
 
         let nombre_vacio: String = connection
@@ -335,7 +349,7 @@ mod test{
             )
             .expect("Debe de existir el performer con nombre vacío");
 
-        assert_eq!(nombre_vacio, "Unknown Performer", "El nombre vacio debe de ser Unknown Performer");
+        assert_eq!(nombre_vacio, "Unknown Performer", "El nombre vacío debe de ser Unknown Performer");
     }
 
     //test para comprobar la función obtener_crear_persona
@@ -346,7 +360,7 @@ mod test{
         //Se registra a la primera persona
         let primer_id = obtener_crear_person(
             &mut connection, 
-            "Martin Garrix",
+            Some("Martin Garrix"),
             Some("Martin Garrix"),
             Some("Martijn Gerard Garritsen"),
             Some("May 12, 1996"), 
@@ -381,7 +395,7 @@ mod test{
         //Intentar llamar de nuevo con la misma persona
         let segundo_id = obtener_crear_person(
             &mut connection,
-            "Martin Garrix",
+            Some("Martin Garrix"),
             Some("Martin Garrix"),
             Some("Martijn Gerard Garritsen"),
             Some("May 12, 1996"), 
@@ -414,7 +428,7 @@ mod test{
 
         let id_daft_punk = obtener_crear_group(
             &mut connection,
-            "Daft Punk",
+            Some("Daft Punk"),
             Some("1993"),
             Some("2021"),
         ).expect("Error creando el grupo de Daft Punk");
@@ -424,7 +438,7 @@ mod test{
         //Insertar un grupo activo sin fecha de fin 
         let id_blink = obtener_crear_group(
             &mut connection,
-            "Blink-182",
+            Some("Blink-182"),
             Some("1992"),
             None,
         ).expect("Error al crear el grupo");
@@ -434,7 +448,7 @@ mod test{
         //Comprobamos que si creamos otra entrada con los mismos datos, nos devuelve el mismo ID
         let prueba_id = obtener_crear_group(
             &mut connection,
-            "Daft Punk",
+            Some("Daft Punk"),
             Some("1993"),
             Some("2021"),
         ).expect("Error creando el grupo de Daft Punk");
@@ -460,7 +474,7 @@ mod test{
         //Creamos a una persona (John Lennon)
         let id_person = obtener_crear_person(
             &mut connection,
-            "John Lennon",
+            Some("John Lennon"),
             Some("John Lennon"),
             Some("John Winston Ono Lennon"),
             Some("Octubre 9 1940"),
@@ -471,7 +485,7 @@ mod test{
         //Creamos el grupo (The Beatles)
         let id_group = obtener_crear_group(
             &mut connection,
-            "The Beatles",
+            Some("The Beatles"),
             Some("1960"),
             Some("1969"),
         ).expect("Error eal crear el grupo");
@@ -504,7 +518,7 @@ mod test{
         let primer_album = obtener_crear_album(
             &mut connection,
             "/musica/daft_punk/discovery",
-            "Discovery",
+            Some("Discovery"),
             Some(2001),
         ).expect("Error al crear el álbum");
 
@@ -525,7 +539,7 @@ mod test{
         let segundo_album = obtener_crear_album(
             &mut connection,
             "/musica/desconocido/album_desconocido",
-            "Album Desconocido",
+            Some("Album Desconocido"),
             None
         ).expect("Error al crear el álbum");
 
@@ -545,7 +559,7 @@ mod test{
         let tercer_album = obtener_crear_album(
             &mut connection,
             "/musica/daft_punk/discovery",
-            "Discovery",
+            Some("Discovery"),
             Some(2001),
         ).expect("Error al crear el álbum");
 
@@ -566,7 +580,7 @@ mod test{
         //Creamos un artista y un album
         let id_performer = obtener_crear_person(
             &mut connection,
-            "Daft Punk",
+            Some("Daft Punk"),
             Some("Daft Punk"),
             None,
             Some("1993"),
@@ -576,7 +590,7 @@ mod test{
         let id_album = obtener_crear_album(
             &mut connection,
             "/musica/daft_punk/discovery",
-            "Discovery",
+            Some("Discovery"),
             Some(2001),
         ).expect("Error al crear álbum");
 
@@ -632,6 +646,55 @@ mod test{
         assert_eq!(id_rola_1, id_reintento, "Debe retornar el ID existente de la rola sin duplicarla");
 }
 
+    #[test]
+    fn prueba_modificar_nombre_performer() {
+        let connection = preparar_db_prueba();
+
+        //Creamos dos instancias de performers
+        let primer_id = obtener_crear_performer(&connection, Some("Latin Mafia"), 1)
+            .expect("Error al crear el performer por primera vez");
+
+        //Cambiamos el nombre al primer performer
+        let nuevo_primer_id = modificar_performers(&connection, primer_id, Some("Paco Papitas"))
+            .expect("Error al modificar el nombre");
+        
+        assert!(nuevo_primer_id, "El nombre debió de haber cambiado");
+
+        //Verificamos el cambio de nombre
+        let nombre_db: String = connection
+        .query_row(
+            "SELECT name FROM performers WHERE id_performer = ?1",
+            [primer_id],
+            |r| r.get(0),
+        ).unwrap();
+
+        assert_eq!(nombre_db, "Paco Papitas");
+
+        modificar_performers(&connection, primer_id, None).unwrap();
+
+        //Modificamos a que el nombre sea NULL
+        let nombre_none: String = connection
+            .query_row(
+                "SELECT name FROM performers WHERE id_performer = ?1 ", 
+                [primer_id], 
+                |r| r.get(0)
+            ).unwrap();
+        
+        assert_eq!(nombre_none, "Unknown Performer");
+
+        //Modificar el texto para la cadena vacía 
+        modificar_performers(&connection, primer_id, Some("     ")).unwrap();
+
+        let nombre_espacios: String = connection
+            .query_row(
+                "SELECT name FROM performers WHERE id_performer = ?1",
+                [primer_id],
+                |r| r.get(0),
+            ).unwrap();
+
+        assert_eq!(nombre_espacios, "Unknown Performer");
+
+    }
     //Fn auxiliar para la prueba unitaria
     fn preparar_db_prueba() -> Connection {
         let connection = Connection::open_in_memory().expect("No se puede crear la bse de datos en memoria");
