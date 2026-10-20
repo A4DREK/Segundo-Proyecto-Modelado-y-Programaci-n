@@ -254,17 +254,18 @@ pub fn modificar_person(
 
     let tx = connection.transaction()?;
 
+    //Validación de los nombres
     let stage_final = verificar_texto(nuevo_stage_name, "Unknown Person");
     let nombre_final = verificar_texto(nombre, stage_final);
 
     //Actualizamos las filas en performers
-    let filas_modificadas = tx.execute(
+    let fila_modificada = tx.execute(
         "UPDATE performers SET name = ?1 WHERE id_performer = ?2",
         params![nombre_final, id_person],
     )?;
 
     //Si devuelve falso quiere decir que el ID no existía 
-    if filas_modificadas == 0 {
+    if fila_modificada == 0 {
         return Ok(false);
     }
 
@@ -274,6 +275,39 @@ pub fn modificar_person(
          SET stage_name = ?1, real_name = ?2, birth_date = ?3, death_date = ?4 
          WHERE id_person = ?5",
          params![stage_final, nuevo_real_name, nuevo_birth_date, nuevo_death_date, id_person],
+    )?;
+
+    tx.commit()?;
+    Ok(true)
+}
+
+pub fn modificar_group(
+    connection: &mut Connection,
+    id_group: i64,
+    nuevo_name: Option<&str>,
+    nueva_start_date: Option<&str>,
+    nueva_end_date: Option<&str>,
+) -> Result<bool> {
+
+    let tx = connection.transaction()?;
+
+    //Validación del nombre: 
+    let nombre_final = verificar_texto(nuevo_name, "Unknown group_name");
+
+    //Actualización de la tabla "performers"
+    let filas_modificadas = tx.execute(
+        "UPDATE performers SET name = ?1 WHERE id_performer = ?2",
+        params![nombre_final, id_group]
+    )?;
+
+    if filas_modificadas == 0 {
+        return Ok(false);
+    }
+
+    //Actualizamos groups 
+    tx.execute(
+        "UPDATE groups SET name = ?1, start_date = ?2, end_date = ?3 WHERE id_group = ?4",
+        params![nombre_final, nueva_start_date, nueva_end_date, id_group]
     )?;
 
     tx.commit()?;
@@ -736,7 +770,7 @@ mod test{
     }
    
     #[test]
-    fn prueba_modificar_persons() {
+    fn prueba_modificar_person() {
         let mut connection = preparar_db_prueba();
 
         //Creamos a una persona inicial
@@ -828,6 +862,96 @@ mod test{
 
     }
 
+    #[test]
+    fn prueba_modificar_group() {
+        let mut connection = preparar_db_prueba();
+
+        let primer_grupo = obtener_crear_group(
+            &mut connection,
+            Some("Grupo Paquito"),
+            Some("2000-01-01"),
+            None,
+        ).expect("Error en la creación del grupo");
+
+        //Esto es una modificación total de todos los parámetros de primer_grupo
+        let actualizacion = modificar_group(
+            &mut connection,
+            primer_grupo,
+            Some("Daft Punk"),
+            Some("1993-01-01"),
+            Some("2021-02-22")
+        ).expect("Error en la modificación del grupo");
+
+        assert!(actualizacion, "Debió de haber sido exitosa la modificación");
+
+        //Verificación en performers
+        let nombre_performer_db: String = connection
+            .query_row(
+                "SELECT name FROM performers WHERE id_performer = ?1", 
+                [primer_grupo],
+                |r| r.get(0),
+            ).unwrap();
+
+        assert_eq!(nombre_performer_db, "Daft Punk");
+
+        //Verificar en groups
+        let (nombre_db, start_date, end_date): (String, Option<String>, Option<String>) = connection
+            .query_row(
+                "SELECT name, start_date, end_date FROM groups WHERE id_group = ?1", 
+                [primer_grupo],
+                |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?)),
+            ).unwrap();
+
+        assert_eq!(nombre_db, "Daft Punk");
+        assert_eq!(start_date.as_deref(), Some("1993-01-01"));
+        assert_eq!(end_date.as_deref(), Some("2021-02-22"));
+
+        //Caso donde hay puras cadenas vacías y NULL 
+        modificar_group(
+            &mut connection, 
+            primer_grupo,
+            Some(" "), 
+            None,
+            None
+        ).expect("Error en la modificación de datos");
+
+        let nombre_verificado_performer: String = connection
+            .query_row(
+                "SELECT name FROM performers WHERE id_performer = ?1",
+                [primer_grupo],
+                |r| r.get(0),
+            ).unwrap();
+        
+        assert_eq!(nombre_verificado_performer, "Unknown group_name");
+
+        //Validar en groups
+        let (nombre_verificado, start_null, end_null): (String, Option<String>, Option<String>) = connection
+            .query_row(
+                "SELECT name, start_date, end_date FROM groups WHERE id_group = ?1",
+                [primer_grupo],
+                |r| Ok((r.get(0)?, r.get(1)?,  r.get(2)?))
+            ).unwrap();
+
+        assert_eq!(nombre_verificado, "Unknown group_name");
+        assert_eq!(start_null, None);
+        assert_eq!(end_null, None);
+
+        //Verificar que no se pueda realizar dentro de un rango no existente
+        let resultado_inexistente = modificar_group(
+            &mut connection,
+            999_999, // ID fuera de rango
+            Some("Grupo Inexistente"),
+            None,
+            None,
+        ).expect("La consulta debe ejecutarse sin errores aunque no encuentre filas");
+
+        assert!(
+            !resultado_inexistente,
+            "Debe de retornar false cuando el id_group es inexistente en la db"
+        );
+
+
+    }
     //Fn auxiliar para la prueba unitaria
     fn preparar_db_prueba() -> Connection {
         let connection = Connection::open_in_memory().expect("No se puede crear la bse de datos en memoria");
