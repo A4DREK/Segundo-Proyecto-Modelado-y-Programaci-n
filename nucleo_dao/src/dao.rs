@@ -225,7 +225,7 @@ pub fn obtener_crear_rola(
 }
 
 //Métodos para poder modificar las entradas de las tablas
-pub fn modificar_performers(
+pub fn modificar_performer(
     connection: &Connection,
     id_performer: i64,
     nuevo_nombre: Option<&str>,
@@ -241,8 +241,47 @@ pub fn modificar_performers(
     Ok(filas_modificadas > 0)
 }
 
+pub fn modificar_person(
+    connection: &mut Connection,
+    id_person : i64,
+    nombre: Option<&str>,
+    nuevo_stage_name: Option<&str>,
+    nuevo_real_name: Option<&str>,
+    nuevo_birth_date: Option<&str>,
+    nuevo_death_date: Option<&str>,
+
+) -> Result<bool> {
+
+    let tx = connection.transaction()?;
+
+    let stage_final = verificar_texto(nuevo_stage_name, "Unknown Person");
+    let nombre_final = verificar_texto(nombre, stage_final);
+
+    //Actualizamos las filas en performers
+    let filas_modificadas = tx.execute(
+        "UPDATE performers SET name = ?1 WHERE id_performer = ?2",
+        params![nombre_final, id_person],
+    )?;
+
+    //Si devuelve falso quiere decir que el ID no existía 
+    if filas_modificadas == 0 {
+        return Ok(false);
+    }
+
+    //Actualizamos persons
+    tx.execute(
+        "UPDATE persons 
+         SET stage_name = ?1, real_name = ?2, birth_date = ?3, death_date = ?4 
+         WHERE id_person = ?5",
+         params![stage_final, nuevo_real_name, nuevo_birth_date, nuevo_death_date, id_person],
+    )?;
+
+    tx.commit()?;
+    Ok(true)
+}
+
 //Función auxiliar para poder verificar que el título de ya sea, el artista, el track o el álbum no sea ""
-fn verificar_texto<'a>(texto: Option<&'a str>, texto_predeterminado: &'static str) -> &'a str {
+fn verificar_texto<'a>(texto: Option<&'a str>, texto_predeterminado: &'a str) -> &'a str {
 
     match texto {
         Some(t) if !t.trim().is_empty() => t.trim(),
@@ -655,7 +694,7 @@ mod test{
             .expect("Error al crear el performer por primera vez");
 
         //Cambiamos el nombre al primer performer
-        let nuevo_primer_id = modificar_performers(&connection, primer_id, Some("Paco Papitas"))
+        let nuevo_primer_id = modificar_performer(&connection, primer_id, Some("Paco Papitas"))
             .expect("Error al modificar el nombre");
         
         assert!(nuevo_primer_id, "El nombre debió de haber cambiado");
@@ -670,7 +709,7 @@ mod test{
 
         assert_eq!(nombre_db, "Paco Papitas");
 
-        modificar_performers(&connection, primer_id, None).unwrap();
+        modificar_performer(&connection, primer_id, None).unwrap();
 
         //Modificamos a que el nombre sea NULL
         let nombre_none: String = connection
@@ -683,7 +722,7 @@ mod test{
         assert_eq!(nombre_none, "Unknown Performer");
 
         //Modificar el texto para la cadena vacía 
-        modificar_performers(&connection, primer_id, Some("     ")).unwrap();
+        modificar_performer(&connection, primer_id, Some("     ")).unwrap();
 
         let nombre_espacios: String = connection
             .query_row(
@@ -695,6 +734,100 @@ mod test{
         assert_eq!(nombre_espacios, "Unknown Performer");
 
     }
+   
+    #[test]
+    fn prueba_modificar_persons() {
+        let mut connection = preparar_db_prueba();
+
+        //Creamos a una persona inicial
+        let primer_id = obtener_crear_person(
+            &mut connection, 
+            Some("Martin Garrix"),
+            Some("Martin Garrix"),
+            Some("Martijn Garritsen"), 
+            Some("1996-05-14"),
+            None
+        ).expect("Error al crear la persona ");
+
+        //Inician las modificaciones
+
+        let actualizacion = modificar_person(
+            &mut connection, 
+            primer_id, 
+            Some("Martin Garrix"),
+            Some("Martin Garrix"),
+            Some("Martijn Gerard Garritsen"),
+            Some("1996-05-14x"),
+            None,
+        ).expect("Error en la modificación de la persona");
+
+        assert!(actualizacion, "Debe de marcar como exitosa la modificación");
+
+        //Validamos que la modificación ya realizada sea correcta
+        let (real_name, stage_name): (Option<String>, String) = connection
+            .query_row(
+                "SELECT real_name, stage_name FROM persons WHERE id_person =?1",
+                [primer_id],
+                |r| Ok((r.get(0)?, r.get(1)?)),
+            ).unwrap();
+
+        assert_eq!(real_name.as_deref(), Some("Martijn Gerard Garritsen"));
+        assert_eq!(stage_name, "Martin Garrix");
+
+        //Ahora vamos a volar con la función de validación
+        modificar_person(
+            &mut connection,
+            primer_id,
+            None,               // Heredará stage_final ("Unknown Person")
+            Some("   "),        // Al ser solo espacios, se convierte en "Unknown Person"
+            None,               // Borra el nombre real (NULL)
+            None,               // Borra la fecha de nacimiento (NULL)
+            Some("2020-01-01"), // Asigna fecha de fallecimiento
+        ).expect("Error al modificar con la verificación");
+
+        let nombre_actualizado: String = connection
+            .query_row(
+                "SELECT name FROM performers WHERE id_performer = ?1", 
+                [primer_id],
+                |r| r.get(0),
+            ).unwrap();
+
+        assert_eq!(nombre_actualizado, "Unknown Person");
+
+
+        //Validar los campos NULL (fallback o fb) y agregados en la tabla "persons"
+        let (stage_fb, real_fb, birth_fb, death_fb): (String, Option<String>, Option<String>, Option<String>) = connection
+        .query_row(
+            "SELECT stage_name, real_name, birth_date, death_date FROM persons WHERE id_person = ?1",
+            [primer_id],
+            |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?, r.get(3)?)),
+        )
+        .unwrap();
+
+        assert_eq!(stage_fb, "Unknown Person");
+        assert_eq!(real_fb, None);
+        assert_eq!(birth_fb, None);
+        assert_eq!(death_fb.as_deref(), Some("2020-01-01"));
+
+        //El caso donde no exista el ID
+        let resultado_inexistente = modificar_person(
+            &mut connection,
+            999_999, // ID fuera de rango
+            Some("Nombre"),
+            Some("Stage"),
+            None,
+            None,
+            None,
+            ).expect("La consulta debe ejecutarse sin errores aunque no encuentre el ID");
+
+        assert!(
+            !resultado_inexistente,
+            "Debe retornar false cuando el id_person no existe en la base de datos"
+        );
+
+
+    }
+
     //Fn auxiliar para la prueba unitaria
     fn preparar_db_prueba() -> Connection {
         let connection = Connection::open_in_memory().expect("No se puede crear la bse de datos en memoria");
