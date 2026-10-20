@@ -314,6 +314,32 @@ pub fn modificar_group(
     Ok(true)
 }
 
+pub fn modificar_in_group(
+    connection: &mut Connection,
+    id_person_actual: i64,
+    id_group_actual: i64,
+    id_person_nuevo: i64,
+    id_group_nuevo: i64,
+) -> Result<bool> {
+    
+    //Revisa que las "referencias no sean iguales"
+    if id_group_actual == id_group_nuevo && id_person_actual == id_person_nuevo {
+        return Ok(true);
+    }
+
+    //Se manda el comando SQL a las tablas para que realicen su respectivo cambio
+    let filas_modificadas = connection.execute(
+        "UPDATE OR IGNORE in_group
+        SET id_person = ?1, id_group = ?2
+        WHERE id_person = ?3 AND id_group = ?4",
+        params![
+            id_person_nuevo, id_group_nuevo, id_person_actual, id_group_actual
+        ]
+    )?;
+
+    //Retorno si se encontró la relación previa y se realizó con éxito el cambio de valores 
+    Ok(filas_modificadas > 0)
+}
 //Función auxiliar para poder verificar que el título de ya sea, el artista, el track o el álbum no sea ""
 fn verificar_texto<'a>(texto: Option<&'a str>, texto_predeterminado: &'a str) -> &'a str {
 
@@ -952,6 +978,96 @@ mod test{
 
 
     }
+    
+    #[test]
+    fn prueba_modificar_in_group() {
+        let mut connection = preparar_db_prueba();
+
+        //Creamos a las personas y grupo
+        let primer_persona = obtener_crear_person(
+            &mut connection, 
+            Some("Persona1"),
+            Some("Artista1"),
+            Some("Persona1"),
+            Some("2000-01-01"),
+            None,
+        ).expect("Error al crear la persona");
+
+        let segunda_persona = obtener_crear_person(
+            &mut connection,
+            Some("Persona2"),
+            Some("Artista2"),
+            Some("Persona2"),
+            Some("1999-12-12"),
+            None,
+        ).expect("Error al crear la persona");
+
+        let primer_grupo = obtener_crear_group(
+            &mut connection, 
+            Some("Grupo1"), 
+            Some("2006-12-02"), 
+            None
+        ).expect("Error al crear el grupo");
+
+        let segundo_grupo = obtener_crear_group(
+            &mut connection,
+            Some("Grupo2"),
+            Some("2010-24-05"),
+            Some("2014-10-02"),
+        ).expect("Error al crear el grupo");
+
+        //Inicia las relaciones en la tabla in_group
+
+        obtener_crear_in_group(&connection, primer_persona, primer_grupo)
+        .expect("Error en la relación de la tabla");
+
+        let modificacion_relacion = modificar_in_group(
+            &mut connection, 
+            primer_persona, 
+            primer_grupo, 
+            segunda_persona, 
+            segundo_grupo,
+        ).expect("Error en la nueva relación");
+
+        assert!(modificacion_relacion, "La modificación debió realizarse con éxito");
+
+        //Checa si la primer persona ya no está en el primer grupo
+        let persona1_grupo1: bool = connection
+            .query_row(
+                "SELECT EXISTS(SELECT 1 FROM in_group WHERE id_person = ?1 AND id_group = ?2)",
+                [primer_persona, segundo_grupo ],
+                |r| r.get(0),
+            ).unwrap();
+
+        assert!(!persona1_grupo1);
+
+        //Checa si. la segunda persona ya está en el primer grupo 
+
+        let persona2_grupo1: bool = connection
+            .query_row(
+                "SELECT EXISTS(SELECT 1 FROM in_group WHERE id_person = ?1 AND id_group = ?2)",
+                [segunda_persona, segundo_grupo],
+                |r| r.get(0),
+            ).unwrap();
+
+        assert!(persona2_grupo1);
+
+        //Intentar modificar una relación inexistente
+        let resultado_inexistente = modificar_in_group(
+            &mut connection, 
+            234, 
+            primer_grupo,
+            primer_persona,
+            primer_grupo
+        ).unwrap();
+
+        assert!(
+            !resultado_inexistente,
+            "Debe de retornar FALSE ya que la relación no existe"
+        );  
+
+    }
+    
     //Fn auxiliar para la prueba unitaria
     fn preparar_db_prueba() -> Connection {
         let connection = Connection::open_in_memory().expect("No se puede crear la bse de datos en memoria");
