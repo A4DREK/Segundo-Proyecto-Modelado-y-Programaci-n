@@ -340,6 +340,46 @@ pub fn modificar_in_group(
     //Retorno si se encontró la relación previa y se realizó con éxito el cambio de valores 
     Ok(filas_modificadas > 0)
 }
+
+pub fn modificar_album(
+    connection: &mut Connection,
+    id_album: i64,
+    nuevo_path: Option<&str>,
+    nuevo_name: Option<&str>,
+    nuevo_year: Option<i64>,
+) -> Result<bool> {
+
+    //Verificaciones de los parámetros de entrada
+    let nombre_final = verificar_texto(nuevo_name, "Unknown Album");
+
+    //Verificación si el album existe, si sí, se copia el path actual, si no, retorna False
+    let path_actual: Option<String> = connection
+        .query_row(
+            "SELECT path FROM albums WHERE id_album = ?1",
+            [id_album],
+            |r| r.get(0),
+        ).optional()?;
+
+    let path_existente = match path_actual {
+        Some(p) => p,
+        None => return Ok(false),
+    };
+
+    //Verificamos el path si el path es vacío entonces deja el path existente
+    let path_final = match nuevo_path {
+        Some(p) if !p.trim().is_empty() => p.trim(),
+        _ => &path_existente,
+    };
+
+    //Se hace la consulta SQL 
+    connection.execute(
+        "UPDATE albums SET path = ?1, name = ?2, year = ?3 WHERE id_album = ?4",
+        params![path_final, nombre_final, nuevo_year, id_album],
+    )?;
+
+    Ok(true)
+}
+
 //Función auxiliar para poder verificar que el título de ya sea, el artista, el track o el álbum no sea ""
 fn verificar_texto<'a>(texto: Option<&'a str>, texto_predeterminado: &'a str) -> &'a str {
 
@@ -1068,6 +1108,74 @@ mod test{
 
     }
     
+    #[test]
+    fn prueba_modificar_album() {
+        
+        let mut connection = preparar_db_prueba();
+
+        let album_inicial = obtener_crear_album(
+            &mut connection,
+            "/musica/tmp/discovery",
+            Some("Discovery"),
+            Some(2001),
+        ).expect("Error al crear el álbum");
+
+        //Si el álbum fue movido a otra carpeta 
+        let modificacion = modificar_album(
+            &mut connection, 
+            album_inicial, 
+            Some("/musica/daft_punk/2001_discovery"),
+            Some("Discovery (Remastered)"),
+            Some(2001),
+        ).expect("Error al modificar el álbum");
+
+        assert!(modificacion, "Se debe de confirmar que se modificó el álbum");
+
+        let (path_db, name_db, year_db): (String, String, Option<i64>) = connection
+            .query_row(
+                "SELECT path, name, year FROM albums WHERE id_album = ?1",
+                [album_inicial],
+                |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?))
+            ).unwrap();
+
+        assert_eq!(path_db, "/musica/daft_punk/2001_discovery");
+        assert_eq!(name_db, "Discovery (Remastered)");
+        assert_eq!(year_db, Some(2001));
+
+        //Verificación de que si la ruta es NULL, se deja la ruta que ya está 
+
+        modificar_album(
+            &mut connection,
+            album_inicial,
+            None, 
+            Some("   "), 
+            None,        
+        )
+        .expect("Error al modificar metadatos");
+
+        let (path_conservado, name_verificado, year_null): (String, String, Option<i64>) = connection
+            .query_row(
+                "SELECT path, name, year FROM albums WHERE id_album = ?1",
+                [album_inicial],
+                |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?)),
+            ).unwrap();
+
+        assert_eq!(path_conservado, "/musica/daft_punk/2001_discovery");
+        assert_eq!(name_verificado, "Unknown Album");
+        assert_eq!(year_null, None);
+
+        //Caso donde el id sea inexistente
+        let resultado_inexistente = modificar_album(
+            &mut connection,
+            999_999,
+            Some("/ruta/falsa"),
+            Some("Album Inexistente"),
+            None,
+        ).unwrap();
+
+        assert!(!resultado_inexistente, "Debe retornar false si el id_album no existe");
+
+    }
     //Fn auxiliar para la prueba unitaria
     fn preparar_db_prueba() -> Connection {
         let connection = Connection::open_in_memory().expect("No se puede crear la bse de datos en memoria");
