@@ -378,8 +378,63 @@ pub fn modificar_album(
     )?;
 
     Ok(true)
+
 }
 
+pub fn modificar_rola(
+    connection: &mut Connection,
+    id_rola: i64,
+    nuevo_id_performer: Option<i64>,
+    nuevo_id_album: Option<i64>,
+    nuevo_path: Option<&str>,
+    nuevo_title: Option<&str>,
+    nuevo_track: Option<i64>,
+    nuevo_year: Option<i64>,
+    nuevo_genre: Option<&str>
+) -> Result<bool> {
+
+    //Obtenemos primero los datos que YA están
+    let datos_actuales: Option<(i64, i64, String)> = connection
+        .query_row(
+            "SELECT id_performer, id_album, path FROM rolas WHERE id_rola = ?1",
+            [id_rola],
+            |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?)),
+        ).optional()?;
+
+    let (performer_actual, album_actual, path_actual) = match datos_actuales {
+        Some(datos) => datos,
+        None => return Ok(false),
+    };
+
+    //Aquí se conserva los valores si es que los datos de entrada son Null o " "
+    let id_performer_final = nuevo_id_performer.unwrap_or(performer_actual);
+    let id_album_final = nuevo_id_album.unwrap_or(album_actual);
+
+    let path_final = match nuevo_path {
+        Some(p) if !p.trim().is_empty() => p.trim(),
+        _ => &path_actual
+    };
+
+    //Inicia la verificación del texto
+    let title_final = verificar_texto(nuevo_title, "Unknown Title");
+    let genre_final = nuevo_genre.and_then(|g| {
+        let t = g.trim();
+        if t.is_empty() {
+            None
+        } else {
+            Some(t)
+        }
+    });
+
+    connection.execute(
+        "UPDATE rolas
+        SET id_performer = ?1, id_album = ?2, path = ?3, title = ?4, track = ?5, year = ?6, genre = ?7 WHERE id_rola = ?8", 
+        params![id_performer_final, id_album_final, path_final, title_final, nuevo_track, nuevo_year, genre_final, id_rola]
+    )?;
+
+    Ok(true)
+
+}
 //Función auxiliar para poder verificar que el título de ya sea, el artista, el track o el álbum no sea ""
 fn verificar_texto<'a>(texto: Option<&'a str>, texto_predeterminado: &'a str) -> &'a str {
 
@@ -392,6 +447,7 @@ fn verificar_texto<'a>(texto: Option<&'a str>, texto_predeterminado: &'a str) ->
 
 #[cfg(test)]
 mod test{
+
     use super::*;
     use rusqlite::Connection;
 
@@ -1174,6 +1230,123 @@ mod test{
         ).unwrap();
 
         assert!(!resultado_inexistente, "Debe retornar false si el id_album no existe");
+
+    }
+   
+    #[test]
+    fn prueba_modificar_rolas() {
+        let mut connection = preparar_db_prueba();
+
+        let performer_1 = obtener_crear_person(
+            &mut connection, 
+            Some("Nombre1"), 
+            Some("stage_name1"),
+            None,
+            None,
+            None
+        ).unwrap();
+
+        let performer_2 = obtener_crear_person(
+            &mut connection, 
+            Some("Nombre2"),
+            Some("stage_name2"),
+            None,
+            None,
+            None,
+        ).unwrap();
+
+
+        let album1 = obtener_crear_album(
+            &mut connection,
+            "/musica/album1", 
+            Some("album"),
+            Some(2001),
+        ).unwrap();
+
+        let album2 = obtener_crear_album(
+            &mut connection,
+            "/musica/album2",
+            Some("album2"),
+            Some(2020),
+        ).unwrap();
+
+        let id_rola = obtener_crear_rola(
+            &mut connection,
+            performer_1,
+            album1,
+            "/musica/album1/01_one_more_time.mp3",
+            Some("One More Time"),
+            Some(1),
+            Some(2001),
+            Some("French House"),
+        ).unwrap();
+
+        let modificado = modificar_rola(
+            &mut connection,
+            id_rola,
+            Some(performer_2), // Cambia artista
+            Some(album2),     // Cambia álbum
+            Some("/musica/album2/01_music_sounds.mp3"),
+            Some("Rola nueva"),
+            Some(1),
+            Some(1998),
+            Some("French House"),
+        ).expect("Error al reasignar FKs en la rola");
+
+        assert!(modificado);
+
+        let (p_db, a_db, title_db): (i64, i64, String) = connection
+            .query_row(
+                "SELECT id_performer, id_album, title FROM rolas WHERE id_rola = ?1",
+                [id_rola],
+                |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?)),
+            ).unwrap();
+        
+        assert_eq!(p_db, performer_2);
+        assert_eq!(a_db, album2);
+        assert_eq!(title_db, "Rola nueva");
+
+        //Conserva las foreign keys, usando el parámetro None, debe de conservarse los datos
+        modificar_rola(
+            &mut connection,
+            id_rola, 
+            None,
+            None,
+            None,
+            Some("   "), 
+            None,
+            None, None
+        ).expect("Error al modificar ls valores de la rola");
+
+        let (p_conservado, a_conservado, title_verificado): (i64, i64, String) = connection
+            .query_row(
+                "SELECT id_performer, id_album, title FROM rolas WHERE id_rola = ?1",
+                [id_rola],
+                |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?)),
+            ).unwrap();
+
+        assert_eq!(p_conservado, performer_2);
+        assert_eq!(a_conservado, album2);
+        assert_eq!(title_verificado, "Unknown Title");
+
+        //Caso de un id_inexistente
+        let id_performer_inexistente = 999_999;
+        let resultado_error_fk = modificar_rola(
+            &mut connection,
+            id_rola,
+            Some(id_performer_inexistente),
+            None,
+            None,
+            Some("Título Validación FK"),
+            None,
+            None,
+            None,
+        );
+
+        assert!(
+            resultado_error_fk.is_err(),
+            "Debe fallar debido a la restricción de Foreign Key en SQLite"
+        );
 
     }
     //Fn auxiliar para la prueba unitaria
