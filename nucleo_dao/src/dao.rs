@@ -61,14 +61,13 @@ pub fn obtener_crear_performer(
     let final_nombre = verificar_texto(name, "Unknown Performer");
 
     //Revisar si ya existe el performer
-    let mut stmt = connection.prepare(
-        "SELECT id_performer FROM performers WHERE name = ?1 AND id_type = ?2"
-    )?;
-
     //Se crea un nuevo ID
-    let id_existente: Option<i64> = stmt
-        .query_row(params![final_nombre, id_type], |r| r.get(0))
-        .optional()?;
+    let id_existente: Option<i64> = connection
+        .query_row( 
+            "SELECT id_performer FROM performers WHERE name = ?1 AND id_type = ?2",
+            params![final_nombre, id_type], 
+            |r| r.get(0)
+        ).optional()?;
 
     if let Some(id) = id_existente{
         return Ok(id);
@@ -157,7 +156,7 @@ pub fn obtener_crear_in_group(
 }
 
 pub fn obtener_crear_album(
-    connection: &mut Connection,
+    connection: & Connection,
     path: &str,
     name: Option<&str>,
     year: Option<i64>,
@@ -166,12 +165,9 @@ pub fn obtener_crear_album(
     let final_name = verificar_texto(name, "Unknown Album");
 
     //Verificamos que el álbum ya exista por su ruta o su nombre
-    let mut stmt = connection.prepare(
-        "SELECT id_album FROM albums WHERE path = ?1"
-    )?;
 
-    let id_existente: Option<i64> = stmt
-        .query_row(params![path], |r| r.get(0))
+    let id_existente: Option<i64> = connection
+        .query_row("SELECT id_album FROM albums WHERE path = ?1", [path], |r| r.get(0))
         .optional()?;
 
     if let Some(id) = id_existente {
@@ -188,7 +184,7 @@ pub fn obtener_crear_album(
 }
 
 pub fn obtener_crear_rola(
-    connection: &mut Connection,
+    connection: &Connection,
     id_performer: i64,
     id_album: i64,
     path: &str,
@@ -199,10 +195,7 @@ pub fn obtener_crear_rola(
 ) -> Result<i64> {
     
     //Si el track no tiene título se le asignará como predeterminado Unknown Title
-    let titulo_final = match title {
-        Some(t) if !t.trim().is_empty() => t.trim(),
-        _ =>  "Unknown Track",
-    };
+    let titulo_final = verificar_texto(title, "Unknown Track");
 
     //Verificar que el track no se encuentre dentro de la tabla 
     let mut stmt = connection.prepare("SELECT id_rola FROM rolas WHERE path = ?1")?;
@@ -315,7 +308,7 @@ pub fn modificar_group(
 }
 
 pub fn modificar_in_group(
-    connection: &mut Connection,
+    connection: &Connection,
     id_person_actual: i64,
     id_group_actual: i64,
     id_person_nuevo: i64,
@@ -342,7 +335,7 @@ pub fn modificar_in_group(
 }
 
 pub fn modificar_album(
-    connection: &mut Connection,
+    connection: &Connection,
     id_album: i64,
     nuevo_path: Option<&str>,
     nuevo_name: Option<&str>,
@@ -382,7 +375,7 @@ pub fn modificar_album(
 }
 
 pub fn modificar_rola(
-    connection: &mut Connection,
+    connection: &Connection,
     id_rola: i64,
     nuevo_id_performer: Option<i64>,
     nuevo_id_album: Option<i64>,
