@@ -4,4 +4,8 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-  nucleo_dao = {path = "../nucleo_dao"}
+nucleo_dao = {path = "../nucleo_dao"}
+dirs = "7.0.0"
+walkdir = "2.5.0"
+id3 = "1.17.2"
+
