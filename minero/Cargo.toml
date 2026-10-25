@@ -8,4 +8,5 @@ nucleo_dao = {path = "../nucleo_dao"}
 dirs = "7.0.0"
 walkdir = "2.5.0"
 id3 = "1.17.2"
+rusqlite = "0.41.0"
 
