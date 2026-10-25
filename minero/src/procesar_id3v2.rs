@@ -103,8 +103,7 @@ pub fn obtener_datos_id3(path: &Path) -> Result<MetadatosCancion, String> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::env::temp_dir;
-use std::fs;
+    use std::fs;
     use std::path::PathBuf;
    
     //Esta última biblioteca es para crear directorios temporales, como en buscar_ruta.rs
