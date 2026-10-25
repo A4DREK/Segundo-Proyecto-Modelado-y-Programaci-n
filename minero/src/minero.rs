@@ -18,6 +18,7 @@ use nucleo_dao::dao::obtener_crear_album;
 use nucleo_dao::dao::obtener_crear_performer;
 use nucleo_dao::dao::obtener_crear_rola;
 use rusqlite::Connection;
+use crate::visualizer::LogTabla;
 
  use crate::buscar_ruta;
  use crate::procesar_id3v2;
@@ -35,8 +36,10 @@ use rusqlite::Connection;
         let connection = dao::conectar_db()
             .map_err(|e| format!("Error en la conexión con la BD: {}", e))?;
 
-        dao::crear_tablas_db(&connection)
-            .map_err(|e| format!("Error al crear las tablas en la BD: {}", e))?;
+        if !Self::existen_tablas(&connection) {
+            dao::crear_tablas_db(&connection)
+                .map_err(|e| format!("Error al crear las tablas en la BD: {}", e))?;
+        }
 
         Ok(Self { connection })
 
@@ -45,8 +48,11 @@ use rusqlite::Connection;
     //Instancia un minero en una conexión ya existente 
     pub fn desde_conexion(connection: Connection) -> Result<Self, String> {
 
-        dao::crear_tablas_db(&connection)
-            .map_err(|e| format!("Error al crear las tablas en la BD: {}", e))?;
+        if !Self::existen_tablas(&connection) {
+                    
+            dao::crear_tablas_db(&connection)
+                .map_err(|e| format!("Error al crear las tablas en la BD: {}", e))?;
+        }
 
         Ok(Self { connection })
 
@@ -58,13 +64,15 @@ use rusqlite::Connection;
         //Obtiene todas las rutas de archivos .mp3 con las etiquetas ID3V2
         let archives = buscar_ruta::obtener_ruta_musica(&music_route)?;
         let mut total_incrusted = 0;
+        let mut total_errors = 0;
 
-        for route_archive in archives {
+        for route_archive in &archives {
 
             //Inicia la extracción de los metadatos ID3V2 del arhivo 
             let metadata = match procesar_id3v2::obtener_datos_id3(&route_archive) {
                 Ok(m) => m,
                 Err(e) => {
+                    total_errors += 1;
                     eprintln!("Error al procesar los metadatos en {:?}: {}", music_route, e);
                     continue;
                 }
@@ -73,7 +81,10 @@ use rusqlite::Connection;
             //Se obtienen los datos para el dao
             let song_path = match metadata.route.to_str() {
                 Some(p) => p,
-                None => continue,
+                None => {
+                    total_errors += 1;
+                    continue;
+                },
             };
 
             //Ruta del album donde están las canciones
@@ -89,8 +100,8 @@ use rusqlite::Connection;
                     .and_then(|s| s.trim().parse::<i64>().ok())
             });
 
-            let year_i64 = metadata.year.map(|y| y as i64);
 
+            let year_i64 = metadata.year.map(|y| y as i64);
             //Inicia las llamadas a los métodos del DAO, para ya conectar directamente con la base de datos
 
             //Parte de los performer, en esta parte cada nueva entrada, debe de entrar en 'Unknown' el usuari
@@ -105,6 +116,8 @@ use rusqlite::Connection;
             ) {
                 Ok(id) => id,
                 Err(e) => {
+                    total_errors +=1;
+                    LogTabla::imprimir_cancion(&metadata, false);
                     eprintln!("Error al guardar el performer en {:?}: {}", music_route, e);
                     continue;
                 }
@@ -118,6 +131,8 @@ use rusqlite::Connection;
             ) {
                 Ok(id) => id,
                 Err(e) => {
+                    total_errors += 1;
+                    LogTabla::imprimir_cancion(&metadata, false);
                     eprintln!("Error al guardar el álbum en: {:?}, {}", music_route, e);
                     continue;
                 }    
@@ -134,14 +149,31 @@ use rusqlite::Connection;
                 year_i64,
                 metadata.genre.as_deref()
             ) {
-                Ok(_) => total_incrusted += 1,
-                Err(e) => eprintln!("Error al guardar la rola en {:?}: {} ", music_route, e),
+                Ok(_) => {
+                    total_incrusted += 1;
+                    LogTabla::imprimir_cancion(&metadata, true);
+                },
+                Err(e) => {
+                    total_errors += 1;
+                    LogTabla::imprimir_cancion(&metadata, false);
+                    eprintln!("Error al guardar la rola en {:?}: {} ", music_route, e)},
             }
         }
 
+        LogTabla::imprimir_resumen(archives.len(), total_incrusted, total_errors);
         Ok(total_incrusted)
     }
 
+    fn existen_tablas(connection: &Connection) -> bool {
+        let conteo: i64 = connection
+            .query_row(
+                "SELECT count(*) FROM sqlite_master WHERE type='table' AND name='types'",
+                [],
+                |r| r.get(0)
+            ).unwrap_or(0);
+
+        conteo > 0
+    }
  }
 
  //Inicio de las pruebas unitarias
