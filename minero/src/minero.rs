@@ -66,6 +66,8 @@ use crate::visualizer::LogTabla;
         let mut total_incrusted = 0;
         let mut total_errors = 0;
 
+        LogTabla::imprimir_encabezado();
+        
         for route_archive in &archives {
 
             //Inicia la extracción de los metadatos ID3V2 del arhivo 
