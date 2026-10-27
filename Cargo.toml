@@ -4,4 +4,5 @@ members = [
   "nucleo_dao",
   "compilador",
   "minero"
+  "reproductor/rust"
 ]
