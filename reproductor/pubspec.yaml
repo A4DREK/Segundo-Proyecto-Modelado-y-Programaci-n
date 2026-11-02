@@ -41,7 +41,8 @@ dependencies:
   just_audio: ^0.10.6
   audio_video_progress_bar: ^2.0.3
   macos_ui: ^2.2.2
-
+  liquid_glass_easy: ^5.2.0
+  flutter_hooks: ^0.21.3+1
 dev_dependencies:
   flutter_test:
     sdk: flutter
