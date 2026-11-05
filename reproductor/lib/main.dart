@@ -24,8 +24,8 @@ class Mp3Player extends StatelessWidget {
     return MacosApp(
       title: 'Reproductor',
       debugShowCheckedModeBanner: true,
-      theme: MacosThemeData.light(),
-      darkTheme: MacosThemeData.dark().copyWith(visualDensity: VisualDensity.adaptivePlatformDensity),
+      theme: MacosThemeData.light().copyWith(visualDensity: VisualDensity.adaptivePlatformDensity),
+      darkTheme: MacosThemeData.dark().copyWith(canvasColor: Colors.transparent),
       themeMode: ThemeMode.system, // Se adapta al modo oscuro/claro de la Mac
       home: const SandboxScreen(), 
     );
