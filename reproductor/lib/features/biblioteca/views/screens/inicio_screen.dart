@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 
 import 'package:reproductor/features/biblioteca/controlador/controlador_biblioteca.dart';
 import 'package:reproductor/features/biblioteca/views/widgets/grid_albumes.dart';
+import 'package:reproductor/features/biblioteca/views/widgets/lista_albumes.dart';
+import 'package:reproductor/features/biblioteca/views/widgets/toggle_vista.dart';
 
 class InicioScreen extends StatefulWidget {
   const InicioScreen({super.key});
@@ -57,13 +59,33 @@ class _InicioScreenState extends State<InicioScreen> {
           const SizedBox(
             height: 40,
           ),
-          const Text(
-            'Escuchando ahora',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize:16,
-              fontWeight: FontWeight.w600,
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Escuchando Ahora',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              Row(
+                children:[
+                  IconButton(
+                    icon: const Icon(
+                      CupertinoIcons.add_circled_solid,
+                      color: Colors.white,
+                    ),
+                    onPressed: () {
+                      print("Abrir Minero");
+                    },
+                  ),
+                  const SizedBox(width: 15,),
+                  ToggleVista(controlador: _controlador),
+                ], 
+              )
+            ],
           ),
           const SizedBox(
             height: 40,
@@ -89,7 +111,9 @@ class _InicioScreenState extends State<InicioScreen> {
                   );
                 }
 
-                return GridAlbumes(canciones: _controlador.albums);
+                return _controlador.vistaGrid
+                  ? GridAlbumes(canciones: _controlador.albums)
+                  : ListaCanciones(canciones: _controlador.albums);
               }
             )
           )

@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:macos_ui/macos_ui.dart';
 
 //El import de cada uno de los "mains" de cada feature 
-import '../../../barra_lateral/views/side_bar.dart';
 import '../../../biblioteca/views/screens/inicio_screen.dart';
 
 
@@ -17,13 +16,6 @@ class MainLayout extends StatelessWidget{
 
     return MacosWindow(
       backgroundColor: Colors.transparent,
-
-      sidebar: Sidebar(
-        builder: (context, controller) {
-          return const SideBar();
-        },
-        minWidth: 200,
-      ),
 
       child: MacosScaffold(
         

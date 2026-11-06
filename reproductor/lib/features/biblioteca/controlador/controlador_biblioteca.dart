@@ -18,6 +18,14 @@ class BibliotecaControlador extends ChangeNotifier {
 
   List<CancionTemporal> albums = [];
   bool cargando = false; //
+  bool vistaGrid = true;
+
+  //Para verificar si esta en x o y vista
+  void alternarVista() {
+    vistaGrid = !vistaGrid;
+    notifyListeners();
+  }
+
 
   void cargarDatos() {
     cargando = true;
