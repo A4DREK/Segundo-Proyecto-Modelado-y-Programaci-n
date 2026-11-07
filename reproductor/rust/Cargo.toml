@@ -9,6 +9,7 @@ crate-type = ["cdylib", "staticlib"]
 [dependencies]
 flutter_rust_bridge = "=2.13.0"
 minero = {path = "../../minero/"}
+nucleo_dao = {path = "../../nucleo_dao/"}
 
 [lints.rust]
-unexpected_cfgs = { level = "warn", check-cfg = ['cfg(frb_expand)'] }
+unexpected_cfgs = {level = "warn", check-cfg = ['cfg(frb_expand)'] }

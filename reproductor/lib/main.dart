@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:macos_ui/macos_ui.dart';
 import 'sandbox.dart';
+import 'package:reproductor/src/rust/frb_generated.dart';
 
 /// This method initializes macos_window_utils and styles the window.
 Future<void> _configureMacosWindowUtils() async {
@@ -11,7 +12,10 @@ Future<void> _configureMacosWindowUtils() async {
 }
 void main() async {
 
+  WidgetsFlutterBinding.ensureInitialized();
+
   await _configureMacosWindowUtils();
+  await RustLib.init();
 
   runApp(const Mp3Player());
 }
@@ -26,7 +30,7 @@ class Mp3Player extends StatelessWidget {
       debugShowCheckedModeBanner: true,
       theme: MacosThemeData.light().copyWith(visualDensity: VisualDensity.adaptivePlatformDensity),
       darkTheme: MacosThemeData.dark().copyWith(canvasColor: Colors.transparent),
-      themeMode: ThemeMode.system, // Se adapta al modo oscuro/claro de la Mac
+      themeMode: ThemeMode.system,
       home: const SandboxScreen(), 
     );
   }

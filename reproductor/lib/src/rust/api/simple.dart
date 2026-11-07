@@ -7,5 +7,35 @@ import '../frb_generated.dart';
 
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
-String greet({required String name}) =>
-    RustLib.instance.api.crateApiSimpleGreet(name: name);
+Future<BigInt> ejecutarMinero({required String rutaMusica}) =>
+    RustLib.instance.api.crateApiSimpleEjecutarMinero(rutaMusica: rutaMusica);
+
+Future<Uint8List?> obtenerPortada({required String rutaMp3}) =>
+    RustLib.instance.api.crateApiSimpleObtenerPortada(rutaMp3: rutaMp3);
+
+Future<List<RolaDto>> obtenerRolasBd() =>
+    RustLib.instance.api.crateApiSimpleObtenerRolasBd();
+
+class RolaDto {
+  final PlatformInt64 idRola;
+  final String titulo;
+  final String path;
+
+  const RolaDto({
+    required this.idRola,
+    required this.titulo,
+    required this.path,
+  });
+
+  @override
+  int get hashCode => idRola.hashCode ^ titulo.hashCode ^ path.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is RolaDto &&
+          runtimeType == other.runtimeType &&
+          idRola == other.idRola &&
+          titulo == other.titulo &&
+          path == other.path;
+}

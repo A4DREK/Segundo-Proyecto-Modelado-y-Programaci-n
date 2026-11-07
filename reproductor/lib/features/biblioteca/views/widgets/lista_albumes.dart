@@ -2,21 +2,28 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:provider/provider.dart';
 
 import 'package:reproductor/features/biblioteca/controlador/controlador_biblioteca.dart';
 
 class ListaCanciones extends StatelessWidget {
-  final List<CancionTemporal> canciones;
+  final List<Rola> canciones;
 
   const ListaCanciones({super.key, required this.canciones});
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(
-      child: ListView.builder(
+    return ListView.builder(
         itemCount: canciones.length,
         itemBuilder: (context, index) {
           final cancion = canciones[index];
+
+          if(cancion.frontCover == null) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              context.read<BibliotecaControlador>().cargarPortada(index);
+            });
+          }
+
           return Padding(
             padding: const EdgeInsets.only(bottom: 15.0),
             child: Row(
@@ -24,7 +31,23 @@ class ListaCanciones extends StatelessWidget {
                 //Esta parte modificarla luego para la parte de los archivos ID3
                 ClipRRect(
                   borderRadius: BorderRadius.circular(8),
-                  child: Image.network(cancion.link, width: 50, height: 50, fit: BoxFit.cover),
+                  child: cancion.frontCover != null 
+                    ? Image.memory(
+                        cancion.frontCover!,
+                        width: 50,
+                        height: 50,
+                        fit: BoxFit.cover
+                      )
+                      : Container(
+                        width: 50,
+                        height: 50,
+                        color: Colors.grey[850],
+                        child: const Icon(
+                          CupertinoIcons.music_albums,
+                          color: Colors.white38,
+                          size: 24,
+                        ),
+                      ),
                 ),
                 const SizedBox(width: 15,),
                 Expanded(
@@ -32,7 +55,7 @@ class ListaCanciones extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        cancion.cancion,
+                        cancion.title,
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 14,
@@ -41,7 +64,7 @@ class ListaCanciones extends StatelessWidget {
                       ),
                       const SizedBox(height: 4,),
                       Text(
-                        cancion.artista,
+                        cancion.performerName,
                         style: const TextStyle(
                           color: Colors.white60,
                           fontSize: 12,
@@ -55,7 +78,6 @@ class ListaCanciones extends StatelessWidget {
             ), 
           );
         },
-      ),
     );
   }
 }

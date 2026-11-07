@@ -18,7 +18,7 @@ class ToggleVista extends StatelessWidget {
       builder: (context, _) {
         return IconButton(
           icon: Icon(
-            controlador.vistaGrid
+            controlador.viewGrid
             ? CupertinoIcons.list_bullet
             : CupertinoIcons.square_grid_2x2,
             color: Colors.white,

@@ -3,38 +3,58 @@
 
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import 'package:reproductor/features/biblioteca/controlador/controlador_biblioteca.dart';
 
 class GridAlbumes extends StatelessWidget {
-  final List<CancionTemporal> canciones;
+  final List<Rola> canciones;
 
   const GridAlbumes({super.key, required this.canciones});
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(
-      child: SizedBox(
-        height: MediaQuery.of(context).size.height,
-        child: GridView.builder(
-          shrinkWrap: true,
-          gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-              maxCrossAxisExtent: 400,
-              childAspectRatio: 0.8,
-              crossAxisSpacing: 50,
-              mainAxisSpacing: 40),
-          itemCount: canciones.length, 
-          itemBuilder: (BuildContext context, int index) {
-            final card = canciones[index];
-            return Container(
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                  color: Colors.grey[900],
-                  image: DecorationImage(
+
+    return GridView.builder(
+      shrinkWrap: true,
+      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+          maxCrossAxisExtent: 400,
+          childAspectRatio: 0.8,
+          crossAxisSpacing: 50,
+          mainAxisSpacing: 40),
+      itemCount: canciones.length, 
+      itemBuilder: (BuildContext context, int index) {
+        final card = canciones[index];
+
+        if(card.frontCover == null ){
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            context.read<BibliotecaControlador>().cargarPortada(index);
+          });
+        }
+
+        return Container(
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+              color: Colors.grey[900],
+              //Parte para cargar la portada del album 
+              image: card.frontCover != null
+                  ? DecorationImage(
                       fit: BoxFit.cover,
-                      image: NetworkImage(card.link)), //Cambiar esta parte para que no sea con internet pq wtf
-                  borderRadius: BorderRadius.circular(20)),
-              child: Column(
+                      image: MemoryImage(card.frontCover!),
+                    )
+                  : null,
+              borderRadius: BorderRadius.circular(20)),
+          child: Stack(
+            children: [
+              if (card.frontCover == null)
+                const Center(
+                  child: Icon(
+                    Icons.music_note_rounded,
+                    size: 64,
+                    color: Colors.white24,
+                  ),
+                ),
+              Column(
                 children: [
                   const Spacer(),
                   FrostedGlassBox(
@@ -50,7 +70,7 @@ class GridAlbumes extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             Text(
-                              card.cancion,
+                              card.title,
                               style: const TextStyle(
                                   color: Colors.white,
                                   fontSize: 14,
@@ -60,7 +80,7 @@ class GridAlbumes extends StatelessWidget {
                               height: 5,
                             ),
                             Text(
-                              card.artista,
+                              card.performerName,
                               style: const TextStyle(
                                   color: Colors.white60,
                                   fontSize: 12,
@@ -73,10 +93,10 @@ class GridAlbumes extends StatelessWidget {
                   )
                 ],
               ),
-            );
-          },
-        ),
-      ),
+            ],
+          ),
+        );
+      },
     );
   }
 }
@@ -87,11 +107,10 @@ class FrostedGlassBox extends StatelessWidget {
   final Widget child;
 
   const FrostedGlassBox(
-      {Key? key,
+      {super.key,
       required this.width,
       required this.height,
-      required this.child})
-      : super(key: key);
+      required this.child});
 
   @override
   Widget build(BuildContext context) {
@@ -115,7 +134,7 @@ class FrostedGlassBox extends StatelessWidget {
               decoration: BoxDecoration(
                   boxShadow: [
                     BoxShadow(
-                        color: Colors.black.withOpacity(0.25),
+                        color: Colors.black.withValues(alpha: 0.25),
                         blurRadius: 30,
                         offset: const Offset(2, 2))
                   ],
@@ -123,8 +142,8 @@ class FrostedGlassBox extends StatelessWidget {
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                       colors: [
-                        Colors.white.withOpacity(0.5),
-                        Colors.white.withOpacity(0.1),
+                        Colors.white.withValues(alpha: 0.5),
+                        Colors.white.withValues(alpha: 0.1),
                       ],
                       stops: const [
                         0.0,
@@ -138,3 +157,8 @@ class FrostedGlassBox extends StatelessWidget {
     );
   }
 }
+
+
+/* 
+
+*/
