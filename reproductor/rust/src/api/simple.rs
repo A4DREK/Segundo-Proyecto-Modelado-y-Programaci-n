@@ -7,8 +7,13 @@ use nucleo_dao::dao::conectar_db;
 //Se implementaran las funciones del minero para poder utilizarlas en FLUTTER
 pub struct RolaDto {
     pub id_rola: i64,
-    pub titulo: String,
     pub path: String,
+    pub titulo: String,
+    pub artista: String,
+    pub album: String,
+    pub track: Option<String>,
+    pub year: Option<i32>,
+    pub genre: Option<String>,
 }
 
 pub fn ejecutar_minero(ruta_musica: String) -> Result<usize, String> {
@@ -29,24 +34,25 @@ pub fn obtener_portada(ruta_mp3: String) -> Result<Option<Vec<u8>>, String> {
 
 pub fn obtener_rolas_bd() -> Result<Vec<RolaDto>, String> {
 
-    let conn = conectar_db().map_err(|e| e.to_string())?;
-    
-    let mut stmt = conn.prepare("SELECT id_rola, title, path FROM rolas").map_err(|e| e.to_string())?;
-    
-    let rolas_iter = stmt.query_map([], |row| {
-        Ok(RolaDto {
-            id_rola: row.get(0)?,
-            titulo: row.get(1)?,
-            path: row.get(2)?,
+    let conn = nucleo_dao::dao::conectar_db()
+        .map_err(|e| format!("Error conectando a SQLite: {}", e))?;
+
+    let rolas_db = nucleo_dao::dao::obtener_todas_las_rolas(&conn)
+            .map_err(|e| format!("Error al consultar SQLite: {}", e))?;
+
+    let dtos = rolas_db
+        .into_iter()
+        .map(|rola| RolaDto {
+            id_rola: rola.id_rola,
+            path: rola.path,
+            titulo: rola.title.unwrap_or_else(|| "Unknown Track".to_string()),
+            artista: rola.performer_name.unwrap_or_else(|| "Unknown Performer".to_string()),
+            album: rola.album_name.unwrap_or_else(|| "Unknown Album".to_string()),
+            track: rola.track.map(|t| t.to_string()),
+            year: rola.year.map(|y| y as i32),
+            genre: rola.genre,
         })
-    }).map_err(|e| e.to_string())?;
-    
-    let mut resultado = Vec::new();
-    for rola in rolas_iter {
-        if let Ok(r) = rola {
-            resultado.push(r);
-        }
-    }
-    
-    Ok(resultado)
+        .collect();
+
+    Ok(dtos)
 }

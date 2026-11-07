@@ -187,6 +187,18 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  int dco_decode_box_autoadd_i_32(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw as int;
+  }
+
+  @protected
+  int dco_decode_i_32(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw as int;
+  }
+
+  @protected
   PlatformInt64 dco_decode_i_64(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return dcoDecodeI64(raw);
@@ -205,6 +217,18 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  String? dco_decode_opt_String(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_String(raw);
+  }
+
+  @protected
+  int? dco_decode_opt_box_autoadd_i_32(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_box_autoadd_i_32(raw);
+  }
+
+  @protected
   Uint8List? dco_decode_opt_list_prim_u_8_strict(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw == null ? null : dco_decode_list_prim_u_8_strict(raw);
@@ -214,12 +238,17 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   RolaDto dco_decode_rola_dto(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
-    if (arr.length != 3)
-      throw Exception('unexpected arr length: expect 3 but see ${arr.length}');
+    if (arr.length != 8)
+      throw Exception('unexpected arr length: expect 8 but see ${arr.length}');
     return RolaDto(
       idRola: dco_decode_i_64(arr[0]),
-      titulo: dco_decode_String(arr[1]),
-      path: dco_decode_String(arr[2]),
+      path: dco_decode_String(arr[1]),
+      titulo: dco_decode_String(arr[2]),
+      artista: dco_decode_String(arr[3]),
+      album: dco_decode_String(arr[4]),
+      track: dco_decode_opt_String(arr[5]),
+      year: dco_decode_opt_box_autoadd_i_32(arr[6]),
+      genre: dco_decode_opt_String(arr[7]),
     );
   }
 
@@ -240,6 +269,18 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var inner = sse_decode_list_prim_u_8_strict(deserializer);
     return utf8.decoder.convert(inner);
+  }
+
+  @protected
+  int sse_decode_box_autoadd_i_32(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_i_32(deserializer));
+  }
+
+  @protected
+  int sse_decode_i_32(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return deserializer.buffer.getInt32();
   }
 
   @protected
@@ -268,6 +309,28 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  String? sse_decode_opt_String(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_String(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
+  int? sse_decode_opt_box_autoadd_i_32(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_i_32(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
   Uint8List? sse_decode_opt_list_prim_u_8_strict(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
 
@@ -282,9 +345,23 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   RolaDto sse_decode_rola_dto(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var var_idRola = sse_decode_i_64(deserializer);
-    var var_titulo = sse_decode_String(deserializer);
     var var_path = sse_decode_String(deserializer);
-    return RolaDto(idRola: var_idRola, titulo: var_titulo, path: var_path);
+    var var_titulo = sse_decode_String(deserializer);
+    var var_artista = sse_decode_String(deserializer);
+    var var_album = sse_decode_String(deserializer);
+    var var_track = sse_decode_opt_String(deserializer);
+    var var_year = sse_decode_opt_box_autoadd_i_32(deserializer);
+    var var_genre = sse_decode_opt_String(deserializer);
+    return RolaDto(
+      idRola: var_idRola,
+      path: var_path,
+      titulo: var_titulo,
+      artista: var_artista,
+      album: var_album,
+      track: var_track,
+      year: var_year,
+      genre: var_genre,
+    );
   }
 
   @protected
@@ -300,12 +377,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  int sse_decode_i_32(SseDeserializer deserializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    return deserializer.buffer.getInt32();
-  }
-
-  @protected
   bool sse_decode_bool(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     return deserializer.buffer.getUint8() != 0;
@@ -315,6 +386,18 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   void sse_encode_String(String self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_list_prim_u_8_strict(utf8.encoder.convert(self), serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_i_32(int self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self, serializer);
+  }
+
+  @protected
+  void sse_encode_i_32(int self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    serializer.buffer.putInt32(self);
   }
 
   @protected
@@ -343,6 +426,26 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_opt_String(String? self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_String(self, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_opt_box_autoadd_i_32(int? self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_i_32(self, serializer);
+    }
+  }
+
+  @protected
   void sse_encode_opt_list_prim_u_8_strict(
     Uint8List? self,
     SseSerializer serializer,
@@ -359,8 +462,13 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   void sse_encode_rola_dto(RolaDto self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_i_64(self.idRola, serializer);
-    sse_encode_String(self.titulo, serializer);
     sse_encode_String(self.path, serializer);
+    sse_encode_String(self.titulo, serializer);
+    sse_encode_String(self.artista, serializer);
+    sse_encode_String(self.album, serializer);
+    sse_encode_opt_String(self.track, serializer);
+    sse_encode_opt_box_autoadd_i_32(self.year, serializer);
+    sse_encode_opt_String(self.genre, serializer);
   }
 
   @protected
@@ -373,12 +481,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   void sse_encode_usize(BigInt self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     serializer.buffer.putBigUint64(self);
-  }
-
-  @protected
-  void sse_encode_i_32(int self, SseSerializer serializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    serializer.buffer.putInt32(self);
   }
 
   @protected

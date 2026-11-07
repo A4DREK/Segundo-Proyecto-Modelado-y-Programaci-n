@@ -82,8 +82,13 @@ pub fn obtener_datos_id3(path: &Path) -> Result<MetadatosCancion, String> {
 
     //Esta parte se usará para la imagen del album y del artista
     //Uso de la parte de PictureType de la biblioteca misma de id3
+    let mut fallback_cover: Option<Vec<u8>> = None;
+
     for picture in tag.pictures() {
         use id3::frame::PictureType;
+        if fallback_cover.is_none() {
+            fallback_cover = Some(picture.data.clone());
+        }
         match picture.picture_type {
             PictureType::CoverFront => {
                 metadatos.front_cover = Some(picture.data.clone());
@@ -93,6 +98,10 @@ pub fn obtener_datos_id3(path: &Path) -> Result<MetadatosCancion, String> {
             }
             _ => {}
         }
+    }
+    
+    if metadatos.front_cover.is_none() {
+        metadatos.front_cover = fallback_cover;
     }
 
     Ok(metadatos)

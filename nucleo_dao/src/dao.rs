@@ -438,6 +438,54 @@ fn verificar_texto<'a>(texto: Option<&'a str>, texto_predeterminado: &'a str) ->
     
 }
 
+//Agregamos esto para la parte de la interfaz gráfica 
+pub struct RolaBD{
+    pub id_rola: i64,
+    pub path: String,
+    pub title: Option<String>,
+    pub performer_name: Option<String>,
+    pub album_name: Option<String>,
+    pub track: Option<i64>,
+    pub year: Option<i64>,
+    pub genre: Option<String>,
+}
+
+pub fn obtener_todas_las_rolas(connection: &Connection) -> Result<Vec<RolaBD>> {
+    let mut stmt = connection.prepare(
+        "SELECT 
+            r.id_rola, 
+            r.path, 
+            r.title, 
+            p.name AS performer_name, 
+            a.name AS album_name, 
+            r.track, 
+            r.year, 
+            r.genre
+         FROM rolas r
+         LEFT JOIN performers p ON r.id_performer = p.id_performer
+         LEFT JOIN albums a ON r.id_album = a.id_album"
+    )?;
+
+    let rolas_iter = stmt.query_map([], |row| {
+        Ok(RolaBD {
+            id_rola: row.get(0)?,
+            path: row.get(1)?,
+            title: row.get(2)?,
+            performer_name: row.get(3)?,
+            album_name: row.get(4)?,
+            track: row.get(5)?,
+            year: row.get(6)?,
+            genre: row.get(7)?,
+        })
+    })?;
+
+    let mut rolas = Vec::new();
+    for rola in rolas_iter {
+        rolas.push(rola?);
+    }
+    Ok(rolas)
+}
+
 #[cfg(test)]
 mod test{
 

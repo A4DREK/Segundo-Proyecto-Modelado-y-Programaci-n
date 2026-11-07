@@ -156,6 +156,13 @@ impl SseDecode for String {
     }
 }
 
+impl SseDecode for i32 {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        deserializer.cursor.read_i32::<NativeEndian>().unwrap()
+    }
+}
+
 impl SseDecode for i64 {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -187,6 +194,28 @@ impl SseDecode for Vec<crate::api::simple::RolaDto> {
     }
 }
 
+impl SseDecode for Option<String> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        if (<bool>::sse_decode(deserializer)) {
+            return Some(<String>::sse_decode(deserializer));
+        } else {
+            return None;
+        }
+    }
+}
+
+impl SseDecode for Option<i32> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        if (<bool>::sse_decode(deserializer)) {
+            return Some(<i32>::sse_decode(deserializer));
+        } else {
+            return None;
+        }
+    }
+}
+
 impl SseDecode for Option<Vec<u8>> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -202,12 +231,22 @@ impl SseDecode for crate::api::simple::RolaDto {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
         let mut var_idRola = <i64>::sse_decode(deserializer);
-        let mut var_titulo = <String>::sse_decode(deserializer);
         let mut var_path = <String>::sse_decode(deserializer);
+        let mut var_titulo = <String>::sse_decode(deserializer);
+        let mut var_artista = <String>::sse_decode(deserializer);
+        let mut var_album = <String>::sse_decode(deserializer);
+        let mut var_track = <Option<String>>::sse_decode(deserializer);
+        let mut var_year = <Option<i32>>::sse_decode(deserializer);
+        let mut var_genre = <Option<String>>::sse_decode(deserializer);
         return crate::api::simple::RolaDto {
             id_rola: var_idRola,
-            titulo: var_titulo,
             path: var_path,
+            titulo: var_titulo,
+            artista: var_artista,
+            album: var_album,
+            track: var_track,
+            year: var_year,
+            genre: var_genre,
         };
     }
 }
@@ -223,13 +262,6 @@ impl SseDecode for usize {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
         deserializer.cursor.read_u64::<NativeEndian>().unwrap() as _
-    }
-}
-
-impl SseDecode for i32 {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
-        deserializer.cursor.read_i32::<NativeEndian>().unwrap()
     }
 }
 
@@ -275,8 +307,13 @@ impl flutter_rust_bridge::IntoDart for crate::api::simple::RolaDto {
     fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
         [
             self.id_rola.into_into_dart().into_dart(),
-            self.titulo.into_into_dart().into_dart(),
             self.path.into_into_dart().into_dart(),
+            self.titulo.into_into_dart().into_dart(),
+            self.artista.into_into_dart().into_dart(),
+            self.album.into_into_dart().into_dart(),
+            self.track.into_into_dart().into_dart(),
+            self.year.into_into_dart().into_dart(),
+            self.genre.into_into_dart().into_dart(),
         ]
         .into_dart()
     }
@@ -294,6 +331,13 @@ impl SseEncode for String {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
         <Vec<u8>>::sse_encode(self.into_bytes(), serializer);
+    }
+}
+
+impl SseEncode for i32 {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        serializer.cursor.write_i32::<NativeEndian>(self).unwrap();
     }
 }
 
@@ -324,6 +368,26 @@ impl SseEncode for Vec<crate::api::simple::RolaDto> {
     }
 }
 
+impl SseEncode for Option<String> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <bool>::sse_encode(self.is_some(), serializer);
+        if let Some(value) = self {
+            <String>::sse_encode(value, serializer);
+        }
+    }
+}
+
+impl SseEncode for Option<i32> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <bool>::sse_encode(self.is_some(), serializer);
+        if let Some(value) = self {
+            <i32>::sse_encode(value, serializer);
+        }
+    }
+}
+
 impl SseEncode for Option<Vec<u8>> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -338,8 +402,13 @@ impl SseEncode for crate::api::simple::RolaDto {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
         <i64>::sse_encode(self.id_rola, serializer);
-        <String>::sse_encode(self.titulo, serializer);
         <String>::sse_encode(self.path, serializer);
+        <String>::sse_encode(self.titulo, serializer);
+        <String>::sse_encode(self.artista, serializer);
+        <String>::sse_encode(self.album, serializer);
+        <Option<String>>::sse_encode(self.track, serializer);
+        <Option<i32>>::sse_encode(self.year, serializer);
+        <Option<String>>::sse_encode(self.genre, serializer);
     }
 }
 
@@ -357,13 +426,6 @@ impl SseEncode for usize {
             .cursor
             .write_u64::<NativeEndian>(self as _)
             .unwrap();
-    }
-}
-
-impl SseEncode for i32 {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
-        serializer.cursor.write_i32::<NativeEndian>(self).unwrap();
     }
 }
 

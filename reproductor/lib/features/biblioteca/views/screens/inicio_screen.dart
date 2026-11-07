@@ -25,43 +25,39 @@ class _InicioScreenState extends StatelessWidget{
   
   const _InicioScreenState();
 
-  @override
+@override
   Widget build(BuildContext context) {
+    
+    final controlador = context.watch<BibliotecaControlador>();
 
-    final BibliotecaControlador _controlador = BibliotecaControlador();
-    //Parte de todo este código es recuperado de: https://github.com/tayormi/apple_music/blob/main/lib/pages/main_page.dart
     return Padding(
       padding: const EdgeInsets.only(top: 40.0, right: 40, left: 40),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          //Parte Superior donde está la parte de buscar (falta implementar el minero)
-          SizedBox(
+          // Barra de búsqueda superior
+          const SizedBox(
             child: Row(
-              children: const [
+              children: [
                 Icon(
                   CupertinoIcons.search,
                   color: Colors.white,
                 ),
-                SizedBox(
-                  width: 10,
-                ),
+                SizedBox(width: 10),
                 Text(
                   'Buscar',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 16,
-                    fontWeight: FontWeight.bold
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(
-            height: 40,
-          ),
+          const SizedBox(height: 40),
 
-          //Parte donde viene el título y los botones 
+          // Título de la sección y botones de acción
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -74,109 +70,102 @@ class _InicioScreenState extends StatelessWidget{
                 ),
               ),
               Row(
-                children:[
-                  ListenableBuilder(
-                    listenable: _controlador,
-                    builder: (context, child) {
-                      return IconButton(
-                        icon: const Icon(
-                          CupertinoIcons.add_circled_solid,
-                          color: Colors.white,
-                        ),
-                        onPressed: _controlador.miner
-                            ? null
-                            : () => _controlador.buscarDirectorio(),
-                      );
-                    }
+                children: [
+                  IconButton(
+                    tooltip: 'Agregar carpeta de música',
+                    icon: const Icon(
+                      CupertinoIcons.add_circled_solid,
+                      color: Colors.white,
+                    ),
+                    onPressed: controlador.miner
+                        ? null
+                        : () => controlador.buscarDirectorio(),
                   ),
-                  const SizedBox(width: 15,),
-                  ToggleVista(controlador: _controlador),
+                  const SizedBox(width: 15),
+                  ToggleVista(controlador: controlador),
                 ], 
-              )
+              ),
             ],
           ),
-          const SizedBox(
-            height: 40,
-          ),
+          const SizedBox(height: 40),
 
-          //Parte donde está la vista de grid/lista, 
+          // Contenido principal (Minando, Cargando, Vacío o Lista/Grid)
           Expanded(
-            child: ListenableBuilder(
-              listenable: _controlador,
-              builder: (context, child) {
-                if(_controlador.miner) {
-                  return const Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        CircularProgressIndicator(color: Colors.white),
-                        SizedBox(height: 16,),
-                        Text(
-                          'Minando directorio',
-                          style: TextStyle(color: Colors.white60, fontSize: 14),
-                        )
-                      ],
-                    ),
-                  );
-                }
-
-                if(_controlador.charged) {
-                  return const Center(
-                    child: CircularProgressIndicator(color: Colors.white)
-                  );
-                }
-
-                if(_controlador.rolas.isEmpty){
-                  return Center(
-                    child:Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(
-                          CupertinoIcons.music_albums,
-                          size: 64,
-                          color: Colors.white38,
-                        ),
-                        const SizedBox(height: 16),
-                        const Text(
-                          'No hay canciones en el directorio',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        const Text(
-                          'Selecciona un directorio de música',
-                          style: TextStyle(color: Colors.white54, fontSize: 13),
-                        ),
-                        const SizedBox(height: 20),
-                        ElevatedButton.icon(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.white10,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 20,
-                              vertical: 12,
-                            ),
-                          ),
-                          onPressed: () => _controlador.buscarDirectorio(),
-                          icon: const Icon(CupertinoIcons.folder_badge_plus),
-                          label: const Text('Seleccionar Carpeta'),
-                        ),
-                      ],
-                    ),
-                  );
-                }
-                
-                return _controlador.viewGrid
-                  ? GridAlbumes(canciones: _controlador.rolas)
-                  : ListaCanciones(canciones: _controlador.rolas);
-              }
-            )
-          )
+            child: _construirContenido(controlador),
+          ),
         ],
       ),
     );
+  }
+
+  Widget _construirContenido(BibliotecaControlador controlador) {
+    if (controlador.miner) {
+      return const Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(color: Colors.white),
+            SizedBox(height: 16),
+            Text(
+              'Minando directorio...',
+              style: TextStyle(color: Colors.white60, fontSize: 14),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (controlador.charged) {
+      return const Center(
+        child: CircularProgressIndicator(color: Colors.white),
+      );
+    }
+
+    if (controlador.rolas.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(
+              CupertinoIcons.music_albums,
+              size: 64,
+              color: Colors.white38,
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'No hay canciones en el directorio',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Selecciona un directorio de música para comenzar',
+              style: TextStyle(color: Colors.white54, fontSize: 13),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.white10,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 12,
+                ),
+              ),
+              onPressed: () => controlador.buscarDirectorio(),
+              icon: const Icon(CupertinoIcons.folder_badge_plus),
+              label: const Text('Seleccionar Carpeta'),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return controlador.viewGrid
+        ? GridAlbumes(canciones: controlador.rolas)
+        : ListaCanciones(canciones: controlador.rolas);
   }
 }

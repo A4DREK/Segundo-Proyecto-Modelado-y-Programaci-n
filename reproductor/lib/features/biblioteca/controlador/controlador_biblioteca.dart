@@ -7,28 +7,49 @@ import 'package:file_picker/file_picker.dart';
 
 class Rola {
   final int idRola;
+  final String path;
   final String title;
   final String performerName;
   final String albumName;
-  final String path;
+  final String? artistAlbum;
+  final int? year;
+  final String? track;
+  final int? discNum;
+  final String? genre;
+  final String? comment;
+  final String? compositor;
+  final String? originalArtist;
   Uint8List? frontCover;
+  Uint8List? artistPortrait;
 
   Rola({
     required this.idRola,
+    required this.path,
     required this.title,
     required this.performerName,
     required this.albumName,
-    required this.path,
+    this.artistAlbum,
+    this.year,
+    this.track,
+    this.discNum,
+    this.genre,
+    this.comment,
+    this.compositor,
+    this.originalArtist,
     this.frontCover,
+    this.artistPortrait,
   });
 
   factory Rola.desdeDto(rust_api.RolaDto dto) {
     return Rola(
       idRola: dto.idRola.toInt(),
       title: dto.titulo,
-      performerName: 'Artista Desconocido', //Este y el siguiente se deben de actualizar
-      albumName: 'Álbum Desconocido',
+      performerName: dto.artista.isNotEmpty? dto.artista : 'Artista Desconocido', //Este y el siguiente se deben de actualizar
+      albumName: dto.album.isNotEmpty? dto.album : 'Álbum Desconocido',
       path: dto.path,
+      track: dto.track,
+      year: dto.year,
+      genre: dto.genre,
     );
   }
 
@@ -98,26 +119,21 @@ class BibliotecaControlador extends ChangeNotifier {
 
   //Para el procesamiento de las portadas de los álbumes 
   Future<void> cargarPortada(int index) async {
-    if(index < 0 || index >= rolas.length) {
-      return;
-    }
-
-    if(rolas[index].frontCover != null) {
-      return;
-    }
-
-    if (_portadasSolicitadas.contains(index)) {
-      return;
-    }
+    if (index < 0 || index >= rolas.length) return;
+    if (rolas[index].frontCover != null || _portadasSolicitadas.contains(index)) return;
 
     _portadasSolicitadas.add(index);
 
     try{
       final bytes = await rust_api.obtenerPortada(rutaMp3: rolas[index].path);
-      if(bytes != null) {
+      if (bytes != null && bytes.isNotEmpty) {
+        debugPrint("Carátula cargada ($index): ${bytes.length} bytes");
         rolas[index].frontCover = bytes;
         notifyListeners();
+      } else {
+          debugPrint("No se encontró carátula ID3 en: ${rolas[index].path}");
       }
+
     }catch(e) {
       debugPrint("Error extrayendo la caratula: $e");
     }

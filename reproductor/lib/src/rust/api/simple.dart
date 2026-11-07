@@ -18,17 +18,35 @@ Future<List<RolaDto>> obtenerRolasBd() =>
 
 class RolaDto {
   final PlatformInt64 idRola;
-  final String titulo;
   final String path;
+  final String titulo;
+  final String artista;
+  final String album;
+  final String? track;
+  final int? year;
+  final String? genre;
 
   const RolaDto({
     required this.idRola,
-    required this.titulo,
     required this.path,
+    required this.titulo,
+    required this.artista,
+    required this.album,
+    this.track,
+    this.year,
+    this.genre,
   });
 
   @override
-  int get hashCode => idRola.hashCode ^ titulo.hashCode ^ path.hashCode;
+  int get hashCode =>
+      idRola.hashCode ^
+      path.hashCode ^
+      titulo.hashCode ^
+      artista.hashCode ^
+      album.hashCode ^
+      track.hashCode ^
+      year.hashCode ^
+      genre.hashCode;
 
   @override
   bool operator ==(Object other) =>
@@ -36,6 +54,11 @@ class RolaDto {
       other is RolaDto &&
           runtimeType == other.runtimeType &&
           idRola == other.idRola &&
+          path == other.path &&
           titulo == other.titulo &&
-          path == other.path;
+          artista == other.artista &&
+          album == other.album &&
+          track == other.track &&
+          year == other.year &&
+          genre == other.genre;
 }
