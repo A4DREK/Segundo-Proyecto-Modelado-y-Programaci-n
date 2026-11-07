@@ -27,7 +27,7 @@ class _InicioScreenState extends StatelessWidget{
 
 @override
   Widget build(BuildContext context) {
-    
+
     final controlador = context.watch<BibliotecaControlador>();
 
     return Padding(
@@ -71,6 +71,16 @@ class _InicioScreenState extends StatelessWidget{
               ),
               Row(
                 children: [
+                  IconButton(
+                    tooltip: 'Limpiar biblioteca',
+                    icon: const Icon(
+                      CupertinoIcons.trash,
+                      color: Colors.white54,
+                    ),
+                    onPressed: controlador.miner
+                        ? null
+                        : () => controlador.limpiarBiblioteca(),
+                  ),
                   IconButton(
                     tooltip: 'Agregar carpeta de música',
                     icon: const Icon(

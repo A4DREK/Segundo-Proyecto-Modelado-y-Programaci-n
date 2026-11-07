@@ -2,7 +2,6 @@
 use std::path::Path;
 use minero::minero::Minero;
 use minero::procesar_id3v2::obtener_datos_id3;
-use nucleo_dao::dao::conectar_db;
 
 //Se implementaran las funciones del minero para poder utilizarlas en FLUTTER
 pub struct RolaDto {

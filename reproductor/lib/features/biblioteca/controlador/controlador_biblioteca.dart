@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'dart:typed_data';
 import 'package:reproductor/src/rust/api/simple.dart' as rust_api;
 import 'package:file_picker/file_picker.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Rola {
   final int idRola;
@@ -88,12 +89,21 @@ class BibliotecaControlador extends ChangeNotifier {
   }
 
   //Muestra el buscador para poder seleccionar el directorio con la música
-  Future<void> buscarDirectorio() async {
+  Future<void> buscarDirectorio({bool cambiarRuta = false}) async {
+    //Si ya se conoce la ruta, ya solo se llama al minero y ya 
+    if (rutaMusica != null && rutaMusica!.isNotEmpty && !cambiarRuta) {
+      await ejecutarMinero(rutaMusica!);
+      return;
+    }
     String? rutaSeleccionada = await FilePicker.getDirectoryPath(
       dialogTitle: "Selecciona tu directorio",
     );
 
     if(rutaSeleccionada != null && rutaSeleccionada.isNotEmpty) {
+      await ejecutarMinero(rutaSeleccionada);
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('ruta_musica', rutaSeleccionada);
+
       await ejecutarMinero(rutaSeleccionada);
     }
   }
@@ -137,6 +147,17 @@ class BibliotecaControlador extends ChangeNotifier {
     }catch(e) {
       debugPrint("Error extrayendo la caratula: $e");
     }
+  }
+
+  Future<void> limpiarBiblioteca() async {
+    rolas.clear();
+    rutaMusica = null;
+    limpiarPortadasRastreadas();
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('ruta_musica');
+
+    notifyListeners();
   }
 
   void limpiarPortadasRastreadas() {
