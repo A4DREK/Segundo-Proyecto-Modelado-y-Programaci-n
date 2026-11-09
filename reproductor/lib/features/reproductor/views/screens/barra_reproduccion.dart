@@ -84,14 +84,33 @@ class BarraReproductor extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   // Fila de botones estáticos
-                  const Row(
+                  Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(CupertinoIcons.backward_fill, size: 20, color: Colors.white),
-                      SizedBox(width: 20),
-                      Icon(CupertinoIcons.play_fill, size: 28, color: Colors.white),
-                      SizedBox(width: 20),
-                      Icon(CupertinoIcons.forward_fill, size: 20, color: Colors.white),
+                      //Botón de reversa
+                      const Icon(CupertinoIcons.backward_fill, size: 20, color: Colors.white),
+                      const SizedBox(width: 20),
+
+                      //Botón de PLay/Pausa
+                      GestureDetector(
+                        behavior: HitTestBehavior.opaque, 
+                        onTap: () {
+                          controlador.alternarReproduccion();
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                          child: Icon(
+                            controlador.reproduciendo 
+                              ? CupertinoIcons.pause_fill 
+                              : CupertinoIcons.play_fill, 
+                            size: 28, 
+                            color: Colors.white
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 20),
+
+                      const Icon(CupertinoIcons.forward_fill, size: 20, color: Colors.white),
                     ],
                   ),
                   const SizedBox(height: 8),
@@ -135,7 +154,6 @@ class BarraReproductor extends StatelessWidget {
               children: [
                 const Icon(CupertinoIcons.speaker_fill, color: Colors.white60, size: 16),
                 Expanded(
-                  // El Material transparente salva la app de crashear en macOS
                   child: Material(
                     type: MaterialType.transparency,
                     child: SliderTheme(
@@ -147,8 +165,8 @@ class BarraReproductor extends StatelessWidget {
                         thumbColor: Colors.white,
                       ),
                       child: Slider(
-                        value: 0.3, // 30% estático
-                        onChanged: (val) {}, // No hace nada
+                        value: controlador.volumen,
+                        onChanged: (val) => controlador.setVolumen(val), 
                       ),
                     ),
                   ),
