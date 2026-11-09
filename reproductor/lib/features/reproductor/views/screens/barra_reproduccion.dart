@@ -13,6 +13,11 @@ class BarraReproductor extends StatelessWidget {
     
     final controlador = context.watch<ReproductorControlador>();
     final cancion = controlador.cancionActual;
+
+    double maxVal = controlador.duracionTotal.inMilliseconds.toDouble();
+    double currentVal = controlador.minActual.inMilliseconds.toDouble();
+    if (maxVal <= 0.0) maxVal = 1.0; 
+    if (currentVal > maxVal) currentVal = maxVal;
     
     return Container(
       height: 85,
@@ -109,7 +114,6 @@ class BarraReproductor extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 20),
-
                       const Icon(CupertinoIcons.forward_fill, size: 20, color: Colors.white),
                     ],
                   ),
@@ -117,28 +121,33 @@ class BarraReproductor extends StatelessWidget {
 
                   Row(
                     children: [
-                      const Text("0:00", style: TextStyle(color: Colors.white60, fontSize: 11)),
+                      Text(formateoTiempo(controlador.minActual), style: const TextStyle(color: Colors.white60, fontSize: 11)),
                       const SizedBox(width: 10),
                       Expanded(
-                        child: Container(
-                          height: 4,
-                          decoration: BoxDecoration(
-                            color: Colors.white24,
-                            borderRadius: BorderRadius.circular(5),
-                          ),
-                          alignment: Alignment.centerLeft,
-                          // Pedacito de progreso "fake"
-                          child: Container(
-                            width: 50, 
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(5),
+                        child: Material(
+                          type: MaterialType.transparency,
+                          child: SliderTheme(
+                            data: SliderTheme.of(context).copyWith(
+                              trackHeight: 3,
+                              thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 5),
+                              overlayShape: const RoundSliderOverlayShape(overlayRadius: 10),
+                              activeTrackColor: Colors.white,
+                              inactiveTrackColor: Colors.white24,
+                              thumbColor: Colors.white,
+                            ),
+                            child: Slider(
+                              min: 0.0,
+                              max: maxVal,
+                              value: currentVal,
+                              onChanged: (val) {
+                                controlador.buscarPosicion(Duration(milliseconds: val.toInt()));
+                              }
                             ),
                           ),
                         ),
                       ),
                       const SizedBox(width: 10),
-                      const Text("-:--", style: TextStyle(color: Colors.white60, fontSize: 11)),
+                      Text(formateoTiempo(controlador.duracionTotal), style: const TextStyle(color: Colors.white60, fontSize: 11)),
                     ],
                   ),
                 ],
@@ -178,4 +187,12 @@ class BarraReproductor extends StatelessWidget {
       ),
     );
   }
+
+  //Método auxiliar para poder mostrar el tiempo en la línea de tiempo 
+  String formateoTiempo(Duration duracion) {
+    final minutos = duracion.inMinutes.remainder(60).toString();
+    final segundos = duracion.inSeconds.remainder(60).toString().padLeft(2, '0');
+
+    return "$minutos:$segundos";
+  } 
 }

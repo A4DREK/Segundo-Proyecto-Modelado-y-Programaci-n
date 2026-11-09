@@ -11,12 +11,30 @@ class ReproductorControlador extends ChangeNotifier {
   bool reproduciendo = false;
   double volumen = 0.5;
 
+  Duration minActual = Duration.zero;
+  Duration duracionTotal = Duration.zero;
+
   //Se inicializa el escucha para la interfaz 
   ReproductorControlador (){
     _audioPlayer.setVolume(volumen);
 
     _audioPlayer.playerStateStream.listen((state) {
       reproduciendo = state.playing;
+
+      if(state.processingState == ProcessingState.completed) {
+        reproduciendo = false;
+        minActual = Duration.zero;
+      }
+      notifyListeners();
+    });
+
+    _audioPlayer.positionStream.listen((posicion) {
+      minActual = posicion;
+      notifyListeners();
+    });
+
+    _audioPlayer.durationStream.listen((duracion) {
+      duracionTotal = duracion ?? Duration.zero;
       notifyListeners();
     });
   }
@@ -40,12 +58,8 @@ class ReproductorControlador extends ChangeNotifier {
 
     if(_audioPlayer.playing) {
       await _audioPlayer.pause();
-      reproduciendo = false;
-      notifyListeners();
     }else {
       await _audioPlayer.play();
-      reproduciendo = true;
-      notifyListeners();
     }
 
   }
@@ -54,6 +68,10 @@ class ReproductorControlador extends ChangeNotifier {
     volumen = nuevoVolumen.clamp(0.0,1.0);
     await _audioPlayer.setVolume(volumen);
     notifyListeners();
+  }
+
+  Future<void> buscarPosicion(Duration posicion) async {
+    await _audioPlayer.seek(posicion);
   }
 
   //Este es para liberar la memoria al cerrar la aplicación 
