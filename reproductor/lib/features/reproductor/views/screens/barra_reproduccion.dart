@@ -93,8 +93,15 @@ class BarraReproductor extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       //Botón de reversa
-                      const Icon(CupertinoIcons.backward_fill, size: 20, color: Colors.white),
-                      const SizedBox(width: 20),
+                      GestureDetector(
+                            behavior: HitTestBehavior.opaque,
+                            onTap: () => controlador.anterior(),
+                            child: const Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                              child: Icon(CupertinoIcons.backward_fill, size: 20, color: Colors.white),
+                            ),
+                          ),                      
+                          const SizedBox(width: 20),
 
                       //Botón de PLay/Pausa
                       GestureDetector(
@@ -114,7 +121,15 @@ class BarraReproductor extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 20),
-                      const Icon(CupertinoIcons.forward_fill, size: 20, color: Colors.white),
+                      
+                      GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: () => controlador.siguiente(),
+                        child: const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                          child: Icon(CupertinoIcons.forward_fill, size: 20, color: Colors.white),
+                        ),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 8),

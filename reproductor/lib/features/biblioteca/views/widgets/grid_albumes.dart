@@ -35,7 +35,7 @@ class GridAlbumes extends StatelessWidget {
 
         return GestureDetector(
           onTap: () {
-            context.read<ReproductorControlador>().reproducirCancion(card);
+            context.read<ReproductorControlador>().reproducirPLaylist(canciones, index);
           },
           child: Container(
             alignment: Alignment.center,

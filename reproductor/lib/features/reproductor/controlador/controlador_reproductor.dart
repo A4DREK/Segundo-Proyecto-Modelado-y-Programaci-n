@@ -10,6 +10,7 @@ class ReproductorControlador extends ChangeNotifier {
   Rola? cancionActual;
   bool reproduciendo = false;
   double volumen = 0.5;
+  List<Rola> playlistActual = [];
 
   Duration minActual = Duration.zero;
   Duration duracionTotal = Duration.zero;
@@ -37,20 +38,49 @@ class ReproductorControlador extends ChangeNotifier {
       duracionTotal = duracion ?? Duration.zero;
       notifyListeners();
     });
+
+    _audioPlayer.currentIndexStream.listen((index) {
+      if (index != null && playlistActual.isNotEmpty && index < playlistActual.length) {
+        cancionActual = playlistActual[index];
+        notifyListeners();
+      }
+    });
   }
 
-  Future<void> reproducirCancion(Rola cancion) async {
+  // Future<void> reproducirCancion(Rola cancion) async {
     
-    try{
-      cancionActual = cancion;
-      notifyListeners();
+  //   try{
+  //     cancionActual = cancion;
+  //     notifyListeners();
       
-      await _audioPlayer.setFilePath(cancion.path);
-      await _audioPlayer.play();
-    }catch(e) {
-      debugPrint("Hubo un error en la reproducción del audio: [$e]");
-    }
+  //     await _audioPlayer.setFilePath(cancion.path);
+  //     await _audioPlayer.play();
+  //   }catch(e) {
+  //     debugPrint("Hubo un error en la reproducción del audio: [$e]");
+  //   }
 
+  // }
+
+  Future<void> reproducirPLaylist(List<Rola> canciones, int indiceActual) async {
+    try{
+      playlistActual = canciones;
+      cancionActual = canciones[indiceActual];
+      notifyListeners();
+
+      final fuenteAudio = canciones.map(
+        (cancion) => AudioSource.uri(Uri.file(cancion.path))
+      ).toList();
+
+      await _audioPlayer.setAudioSources(
+        fuenteAudio,
+        initialIndex: indiceActual,
+      );
+
+      await _audioPlayer.play();
+
+    }catch(e){
+      debugPrint("Error en la reproducción: [$e]");
+    }
   }
 
   Future<void> alternarReproduccion() async {
@@ -62,6 +92,21 @@ class ReproductorControlador extends ChangeNotifier {
       await _audioPlayer.play();
     }
 
+  }
+
+  Future<void> siguiente() async {
+    if (_audioPlayer.hasNext) {
+      await _audioPlayer.seekToNext();
+    }
+  }
+
+  Future<void> anterior() async {
+    if (_audioPlayer.hasPrevious) {
+      await _audioPlayer.seekToPrevious();
+    } else {
+      // Si es la primera canción, la reinicia al segundo 0
+      await _audioPlayer.seek(Duration.zero);
+    }
   }
 
   Future<void> setVolumen(double nuevoVolumen) async{
