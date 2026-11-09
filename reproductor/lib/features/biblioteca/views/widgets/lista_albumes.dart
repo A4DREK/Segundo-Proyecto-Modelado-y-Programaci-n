@@ -5,6 +5,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
 
 import 'package:reproductor/features/biblioteca/controlador/controlador_biblioteca.dart';
+import '../../../reproductor/controlador/controlador_reproductor.dart';
 
 class ListaCanciones extends StatelessWidget {
   final List<Rola> canciones;
@@ -73,7 +74,16 @@ class ListaCanciones extends StatelessWidget {
                     ],
                   ),
                 ),
-                const Icon(CupertinoIcons.play_circle_fill, color: Colors.white54),
+                GestureDetector(
+                  behavior: HitTestBehavior.opaque, 
+                  onTap: () {
+                    context.read<ReproductorControlador>().reproducirPLaylist(canciones, index);
+                  },
+                  child: const Padding(
+                    padding: EdgeInsets.all(8.0), 
+                    child: Icon(CupertinoIcons.play_circle_fill, color: Colors.white54, size: 28),
+                  ),
+                ),
               ],
             ), 
           );
