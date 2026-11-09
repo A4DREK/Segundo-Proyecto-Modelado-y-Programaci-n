@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'package:reproductor/features/biblioteca/controlador/controlador_biblioteca.dart';
+import 'package:reproductor/features/reproductor/controlador/controlador_reproductor.dart';
 
 class GridAlbumes extends StatelessWidget {
   final List<Rola> canciones;
@@ -32,68 +33,73 @@ class GridAlbumes extends StatelessWidget {
           });
         }
 
-        return Container(
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-              color: Colors.grey[900],
-              //Parte para cargar la portada del album 
-              image: card.frontCover != null
-                  ? DecorationImage(
-                      fit: BoxFit.cover,
-                      image: MemoryImage(card.frontCover!),
-                    )
-                  : null,
-              borderRadius: BorderRadius.circular(20)),
-          child: Stack(
-            children: [
-              if (card.frontCover == null)
-                const Center(
-                  child: Icon(
-                    Icons.music_note_rounded,
-                    size: 64,
-                    color: Colors.white24,
+        return GestureDetector(
+          onTap: () {
+            context.read<ReproductorControlador>().reproducirCancion(card);
+          },
+          child: Container(
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+                color: Colors.grey[900],
+                //Parte para cargar la portada del album 
+                image: card.frontCover != null
+                    ? DecorationImage(
+                        fit: BoxFit.cover,
+                        image: MemoryImage(card.frontCover!),
+                      )
+                    : null,
+                borderRadius: BorderRadius.circular(20)),
+            child: Stack(
+              children: [
+                if (card.frontCover == null)
+                  const Center(
+                    child: Icon(
+                      Icons.music_note_rounded,
+                      size: 64,
+                      color: Colors.white24,
+                    ),
                   ),
-                ),
-              Column(
-                children: [
-                  const Spacer(),
-                  FrostedGlassBox(
-                    height: 100,
-                    width: MediaQuery.of(context).size.width,
-                    child: ClipRRect(
-                      borderRadius: const BorderRadius.only(
-                          bottomLeft: Radius.circular(20),
-                          bottomRight: Radius.circular(20)),
-                      child: Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Text(
-                              card.title,
-                              style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600),
-                            ),
-                            const SizedBox(
-                              height: 5,
-                            ),
-                            Text(
-                              card.performerName,
-                              style: const TextStyle(
-                                  color: Colors.white60,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w300),
-                            ),
-                          ],
+                Column(
+                  children: [
+                    const Spacer(),
+                    FrostedGlassBox(
+                      height: 100,
+                      width: MediaQuery.of(context).size.width,
+                      child: ClipRRect(
+                        borderRadius: const BorderRadius.only(
+                            bottomLeft: Radius.circular(20),
+                            bottomRight: Radius.circular(20)),
+                        child: Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Text(
+                                card.title,
+                                style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600),
+                              ),
+                              const SizedBox(
+                                height: 5,
+                              ),
+                              Text(
+                                card.performerName,
+                                style: const TextStyle(
+                                    color: Colors.white60,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w300),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                  )
-                ],
-              ),
-            ],
+                    )
+                  ],
+                ),
+              ],
+            ),
           ),
         );
       },

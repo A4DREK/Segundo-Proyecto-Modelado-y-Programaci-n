@@ -1,11 +1,19 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../../controlador/controlador_reproductor.dart';
+
 
 class BarraReproductor extends StatelessWidget {
   const BarraReproductor({super.key});
 
   @override
   Widget build(BuildContext context) {
+    
+    final controlador = context.watch<ReproductorControlador>();
+    final cancion = controlador.cancionActual;
+    
     return Container(
       height: 85,
       width: double.infinity,
@@ -18,47 +26,55 @@ class BarraReproductor extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // Información Falsa (Aquí ira la parte para que muestre la portada del ID3V2")
-          SizedBox(
-            width: 250,
-            child: Row(
-              children: [
-                // Carátula Falsa
-                Container(
-                  width: 54,
-                  height: 54,
-                  decoration: BoxDecoration(
-                    color: Colors.white10,
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: const Icon(CupertinoIcons.music_note, color: Colors.white54, size: 24),
+          //(Aquí ira la parte para que muestre la portada del ID3V2")
+        SizedBox(
+          width: 250,
+          child: Row(
+            children: [
+              Container(
+                width: 54,
+                height: 54,
+                decoration: BoxDecoration(
+                  color: Colors.white10,
+                  borderRadius: BorderRadius.circular(6),
+                  //Aquí ya se hace el render del archivo y que, en efecto, tenga una portada
+                  image: cancion?.frontCover != null 
+                    ? DecorationImage(
+                        image: MemoryImage(cancion!.frontCover!),
+                        fit: BoxFit.cover,
+                      ) 
+                    : null,
                 ),
-                const SizedBox(width: 12),
-                // Textos
-                const Expanded(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "Canción de Prueba",
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600),
-                      ),
-                      SizedBox(height: 4),
-                      Text(
-                        "Artista Desconocido",
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(color: Colors.white60, fontSize: 12),
-                      ),
-                    ],
-                  ),
+                child: cancion?.frontCover == null 
+                  ? const Icon(CupertinoIcons.music_note, color: Colors.white54, size: 24)
+                  : null,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    //Aquí es donde se hace el render del nombre de la canción y de los performers
+                    Text(
+                      cancion?.title ?? "Sin selección",
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      cancion?.performerName ?? "--",
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(color: Colors.white60, fontSize: 12),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
+        ),
 
           // Controles 
           Expanded(

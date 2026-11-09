@@ -9,7 +9,7 @@ import '../../controlador/controlador_biblioteca.dart';
 class ToggleVista extends StatelessWidget {
   final BibliotecaControlador controlador;
   
-  ToggleVista({super.key, required this.controlador});
+  const ToggleVista({super.key, required this.controlador});
 
   @override
   Widget build(BuildContext context) {
