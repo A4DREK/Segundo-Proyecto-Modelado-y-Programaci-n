@@ -16,17 +16,13 @@ pub struct RolaDto {
 }
 
 pub fn ejecutar_minero(ruta_musica: String) -> Result<usize, String> {
-    let path = Path::new(&ruta_musica);
-    
-    // Llamas a tu implementación original existente
+    let path = Path::new(&ruta_musica);    
     let mut minero = Minero::nuevo()?;
     minero.minar_directorio(path)
 }
 
 pub fn obtener_portada(ruta_mp3: String) -> Result<Option<Vec<u8>>, String> {
     let path = Path::new(&ruta_mp3);
-    
-    // Usas tu función de ID3 original
     let metadatos = obtener_datos_id3(path)?;
     Ok(metadatos.front_cover)
 }
@@ -54,4 +50,68 @@ pub fn obtener_rolas_bd() -> Result<Vec<RolaDto>, String> {
         .collect();
 
     Ok(dtos)
+}
+
+pub fn actualizar_rola(
+    id_rola: i64,
+    nuevo_title: Option<String>,
+    nuevo_track: Option<i64>,
+    nuevo_year: Option<i64>,
+    nuevo_genre: Option<String>,
+) -> Result<bool, String> {
+    let conn = nucleo_dao::dao::conectar_db()
+        .map_err(|e| format!("Error al conectar con la base de datos: {}", e))?;
+
+
+    nucleo_dao::dao::modificar_rola(
+        &conn,
+        id_rola,
+        None,
+        None,
+        None,
+        nuevo_title.as_deref(),
+        nuevo_track,
+        nuevo_year,
+        nuevo_genre.as_deref(),
+    ).map_err(|e| format!("Error al modificar el SQL: {}", e))
+}   
+
+pub fn actualizar_persona(
+    id_person: i64,
+    nombre: Option<String>,
+    nuevo_stage_name: Option<String>,
+    nuevo_real_name: Option<String>,
+    nuevo_birth_date: Option<String>,
+    nuevo_death_date: Option<String>,
+) -> Result<bool, String> {
+    let mut conn = nucleo_dao::dao::conectar_db()
+        .map_err(|e| format!("Error al conectar con la base de datos: {}", e))?;
+
+    nucleo_dao::dao::modificar_person(
+        &mut conn,
+        id_person,
+        nombre.as_deref(),
+        nuevo_stage_name.as_deref(),
+        nuevo_real_name.as_deref(),
+        nuevo_birth_date.as_deref(),
+        nuevo_death_date.as_deref(),
+    ).map_err(|e| format!("Error modificando el SQL: {}", e))
+}
+
+pub fn actualizar_grupo(
+    id_group: i64,
+    nuevo_name: Option<String>,
+    nueva_start_date: Option<String>,
+    nueva_end_date: Option<String>,
+) -> Result<bool, String> {
+    let mut conn = nucleo_dao::dao::conectar_db()
+        .map_err(|e| format!("Error conectando la base de datos: {}", e))?;
+
+    nucleo_dao::dao::modificar_group(
+        &mut conn,
+        id_group,
+        nuevo_name.as_deref(), 
+        nueva_start_date.as_deref(), 
+        nueva_end_date.as_deref(),
+    ).map_err(|e| format!("Error modificando el SQL: {}", e))
 }

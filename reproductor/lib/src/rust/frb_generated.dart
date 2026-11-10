@@ -28,7 +28,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
     ExternalLibrary? externalLibrary,
     bool forceSameCodegenVersion = true,
   }) async {
-    await instance. initImpl(
+    await instance.initImpl(
       api: api,
       handler: handler,
       externalLibrary: externalLibrary,
@@ -67,7 +67,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.13.0';
 
   @override
-  int get rustContentHash => -1742336950;
+  int get rustContentHash => -1825778993;
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
@@ -79,6 +79,30 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
 }
 
 abstract class RustLibApi extends BaseApi {
+  Future<bool> crateApiSimpleActualizarGrupo({
+    required PlatformInt64 idGroup,
+    String? nuevoName,
+    String? nuevaStartDate,
+    String? nuevaEndDate,
+  });
+
+  Future<bool> crateApiSimpleActualizarPersona({
+    required PlatformInt64 idPerson,
+    String? nombre,
+    String? nuevoStageName,
+    String? nuevoRealName,
+    String? nuevoBirthDate,
+    String? nuevoDeathDate,
+  });
+
+  Future<bool> crateApiSimpleActualizarRola({
+    required PlatformInt64 idRola,
+    String? nuevoTitle,
+    PlatformInt64? nuevoTrack,
+    PlatformInt64? nuevoYear,
+    String? nuevoGenre,
+  });
+
   Future<BigInt> crateApiSimpleEjecutarMinero({required String rutaMusica});
 
   Future<Uint8List?> crateApiSimpleObtenerPortada({required String rutaMp3});
@@ -95,6 +119,149 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   });
 
   @override
+  Future<bool> crateApiSimpleActualizarGrupo({
+    required PlatformInt64 idGroup,
+    String? nuevoName,
+    String? nuevaStartDate,
+    String? nuevaEndDate,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_i_64(idGroup, serializer);
+          sse_encode_opt_String(nuevoName, serializer);
+          sse_encode_opt_String(nuevaStartDate, serializer);
+          sse_encode_opt_String(nuevaEndDate, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 1,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_bool,
+          decodeErrorData: sse_decode_String,
+        ),
+        constMeta: kCrateApiSimpleActualizarGrupoConstMeta,
+        argValues: [idGroup, nuevoName, nuevaStartDate, nuevaEndDate],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiSimpleActualizarGrupoConstMeta =>
+      const TaskConstMeta(
+        debugName: "actualizar_grupo",
+        argNames: ["idGroup", "nuevoName", "nuevaStartDate", "nuevaEndDate"],
+      );
+
+  @override
+  Future<bool> crateApiSimpleActualizarPersona({
+    required PlatformInt64 idPerson,
+    String? nombre,
+    String? nuevoStageName,
+    String? nuevoRealName,
+    String? nuevoBirthDate,
+    String? nuevoDeathDate,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_i_64(idPerson, serializer);
+          sse_encode_opt_String(nombre, serializer);
+          sse_encode_opt_String(nuevoStageName, serializer);
+          sse_encode_opt_String(nuevoRealName, serializer);
+          sse_encode_opt_String(nuevoBirthDate, serializer);
+          sse_encode_opt_String(nuevoDeathDate, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 2,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_bool,
+          decodeErrorData: sse_decode_String,
+        ),
+        constMeta: kCrateApiSimpleActualizarPersonaConstMeta,
+        argValues: [
+          idPerson,
+          nombre,
+          nuevoStageName,
+          nuevoRealName,
+          nuevoBirthDate,
+          nuevoDeathDate,
+        ],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiSimpleActualizarPersonaConstMeta =>
+      const TaskConstMeta(
+        debugName: "actualizar_persona",
+        argNames: [
+          "idPerson",
+          "nombre",
+          "nuevoStageName",
+          "nuevoRealName",
+          "nuevoBirthDate",
+          "nuevoDeathDate",
+        ],
+      );
+
+  @override
+  Future<bool> crateApiSimpleActualizarRola({
+    required PlatformInt64 idRola,
+    String? nuevoTitle,
+    PlatformInt64? nuevoTrack,
+    PlatformInt64? nuevoYear,
+    String? nuevoGenre,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_i_64(idRola, serializer);
+          sse_encode_opt_String(nuevoTitle, serializer);
+          sse_encode_opt_box_autoadd_i_64(nuevoTrack, serializer);
+          sse_encode_opt_box_autoadd_i_64(nuevoYear, serializer);
+          sse_encode_opt_String(nuevoGenre, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 3,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_bool,
+          decodeErrorData: sse_decode_String,
+        ),
+        constMeta: kCrateApiSimpleActualizarRolaConstMeta,
+        argValues: [idRola, nuevoTitle, nuevoTrack, nuevoYear, nuevoGenre],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiSimpleActualizarRolaConstMeta =>
+      const TaskConstMeta(
+        debugName: "actualizar_rola",
+        argNames: [
+          "idRola",
+          "nuevoTitle",
+          "nuevoTrack",
+          "nuevoYear",
+          "nuevoGenre",
+        ],
+      );
+
+  @override
   Future<BigInt> crateApiSimpleEjecutarMinero({required String rutaMusica}) {
     return handler.executeNormal(
       NormalTask(
@@ -104,7 +271,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 1,
+            funcId: 4,
             port: port_,
           );
         },
@@ -135,7 +302,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 2,
+            funcId: 5,
             port: port_,
           );
         },
@@ -162,7 +329,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 3,
+            funcId: 6,
             port: port_,
           );
         },
@@ -187,9 +354,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  bool dco_decode_bool(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw as bool;
+  }
+
+  @protected
   int dco_decode_box_autoadd_i_32(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw as int;
+  }
+
+  @protected
+  PlatformInt64 dco_decode_box_autoadd_i_64(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_i_64(raw);
   }
 
   @protected
@@ -226,6 +405,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   int? dco_decode_opt_box_autoadd_i_32(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw == null ? null : dco_decode_box_autoadd_i_32(raw);
+  }
+
+  @protected
+  PlatformInt64? dco_decode_opt_box_autoadd_i_64(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_box_autoadd_i_64(raw);
   }
 
   @protected
@@ -272,9 +457,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  bool sse_decode_bool(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return deserializer.buffer.getUint8() != 0;
+  }
+
+  @protected
   int sse_decode_box_autoadd_i_32(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     return (sse_decode_i_32(deserializer));
+  }
+
+  @protected
+  PlatformInt64 sse_decode_box_autoadd_i_64(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_i_64(deserializer));
   }
 
   @protected
@@ -331,6 +528,17 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  PlatformInt64? sse_decode_opt_box_autoadd_i_64(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_i_64(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
   Uint8List? sse_decode_opt_list_prim_u_8_strict(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
 
@@ -377,21 +585,30 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  bool sse_decode_bool(SseDeserializer deserializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    return deserializer.buffer.getUint8() != 0;
-  }
-
-  @protected
   void sse_encode_String(String self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_list_prim_u_8_strict(utf8.encoder.convert(self), serializer);
   }
 
   @protected
+  void sse_encode_bool(bool self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    serializer.buffer.putUint8(self ? 1 : 0);
+  }
+
+  @protected
   void sse_encode_box_autoadd_i_32(int self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_i_32(self, serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_i_64(
+    PlatformInt64 self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_64(self, serializer);
   }
 
   @protected
@@ -446,6 +663,19 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_opt_box_autoadd_i_64(
+    PlatformInt64? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_i_64(self, serializer);
+    }
+  }
+
+  @protected
   void sse_encode_opt_list_prim_u_8_strict(
     Uint8List? self,
     SseSerializer serializer,
@@ -481,11 +711,5 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   void sse_encode_usize(BigInt self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     serializer.buffer.putBigUint64(self);
-  }
-
-  @protected
-  void sse_encode_bool(bool self, SseSerializer serializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    serializer.buffer.putUint8(self ? 1 : 0);
   }
 }

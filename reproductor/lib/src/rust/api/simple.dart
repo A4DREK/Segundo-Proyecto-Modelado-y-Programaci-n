@@ -16,6 +16,48 @@ Future<Uint8List?> obtenerPortada({required String rutaMp3}) =>
 Future<List<RolaDto>> obtenerRolasBd() =>
     RustLib.instance.api.crateApiSimpleObtenerRolasBd();
 
+Future<bool> actualizarRola({
+  required PlatformInt64 idRola,
+  String? nuevoTitle,
+  PlatformInt64? nuevoTrack,
+  PlatformInt64? nuevoYear,
+  String? nuevoGenre,
+}) => RustLib.instance.api.crateApiSimpleActualizarRola(
+  idRola: idRola,
+  nuevoTitle: nuevoTitle,
+  nuevoTrack: nuevoTrack,
+  nuevoYear: nuevoYear,
+  nuevoGenre: nuevoGenre,
+);
+
+Future<bool> actualizarPersona({
+  required PlatformInt64 idPerson,
+  String? nombre,
+  String? nuevoStageName,
+  String? nuevoRealName,
+  String? nuevoBirthDate,
+  String? nuevoDeathDate,
+}) => RustLib.instance.api.crateApiSimpleActualizarPersona(
+  idPerson: idPerson,
+  nombre: nombre,
+  nuevoStageName: nuevoStageName,
+  nuevoRealName: nuevoRealName,
+  nuevoBirthDate: nuevoBirthDate,
+  nuevoDeathDate: nuevoDeathDate,
+);
+
+Future<bool> actualizarGrupo({
+  required PlatformInt64 idGroup,
+  String? nuevoName,
+  String? nuevaStartDate,
+  String? nuevaEndDate,
+}) => RustLib.instance.api.crateApiSimpleActualizarGrupo(
+  idGroup: idGroup,
+  nuevoName: nuevoName,
+  nuevaStartDate: nuevaStartDate,
+  nuevaEndDate: nuevaEndDate,
+);
+
 class RolaDto {
   final PlatformInt64 idRola;
   final String path;
