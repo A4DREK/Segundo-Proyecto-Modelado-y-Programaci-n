@@ -1,5 +1,3 @@
-//Modificación bien del controlado para que ya acepte las etiquetas de la BD
-
 import 'package:flutter/material.dart';
 import 'dart:typed_data';
 import 'package:reproductor/src/rust/api/simple.dart' as rust_api;
@@ -162,6 +160,52 @@ class BibliotecaControlador extends ChangeNotifier {
 
   void limpiarPortadasRastreadas() {
     _portadasSolicitadas.clear();
+  }
+
+
+  Future<void> editarCancion({
+    required int idRola,
+    required String titulo,
+    int? track,
+    int? year,
+    String? genero,
+  }) async{
+    try {
+      final exito = await rust_api.actualizarRola(
+        idRola: idRola,
+        nuevoTitle: titulo,
+        nuevoTrack: track,
+        nuevoYear: year,
+        nuevoGenre: genero,
+      );
+
+      if(!exito) return;
+
+      final index = rolas.indexWhere((c) => c.idRola == idRola);
+
+      if(index != -1) {
+        final cancionActual = rolas[index];
+        rolas[index] = Rola(
+            idRola: cancionActual.idRola,
+            path: cancionActual.path,
+            performerName: cancionActual.performerName,
+            artistAlbum: cancionActual.artistAlbum,
+            albumName: cancionActual.albumName,
+            title: titulo,
+            track: track?.toString(), 
+            year: year,
+            genre: genero,
+            frontCover: cancionActual.frontCover, 
+            artistPortrait: cancionActual.artistPortrait,
+        );
+        
+      }
+
+      notifyListeners();
+
+    }catch(e) {
+      debugPrint("Error editando la canción: [$e]");
+    }
   }
 
 }
