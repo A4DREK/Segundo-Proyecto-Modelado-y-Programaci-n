@@ -39,7 +39,7 @@ flutter_rust_bridge::frb_generated_boilerplate!(
     default_rust_auto_opaque = RustAutoOpaqueMoi,
 );
 pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_VERSION: &str = "2.13.0";
-pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = -1825778993;
+pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = -280603729;
 
 // Section: executor
 
@@ -81,6 +81,47 @@ fn wire__crate__api__simple__actualizar_grupo_impl(
                         api_nuevo_name,
                         api_nueva_start_date,
                         api_nueva_end_date,
+                    )?;
+                    std::result::Result::Ok(output_ok)
+                })())
+            }
+        },
+    )
+}
+fn wire__crate__api__simple__actualizar_in_group_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "actualizar_in_group",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_id_person_actual = <i64>::sse_decode(&mut deserializer);
+            let api_id_group_actual = <i64>::sse_decode(&mut deserializer);
+            let api_id_person_nuevo = <i64>::sse_decode(&mut deserializer);
+            let api_id_group_nuevo = <i64>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| {
+                transform_result_sse::<_, String>((move || {
+                    let output_ok = crate::api::simple::actualizar_in_group(
+                        api_id_person_actual,
+                        api_id_group_actual,
+                        api_id_person_nuevo,
+                        api_id_group_nuevo,
                     )?;
                     std::result::Result::Ok(output_ok)
                 })())
@@ -177,6 +218,90 @@ fn wire__crate__api__simple__actualizar_rola_impl(
                         api_nuevo_track,
                         api_nuevo_year,
                         api_nuevo_genre,
+                    )?;
+                    std::result::Result::Ok(output_ok)
+                })())
+            }
+        },
+    )
+}
+fn wire__crate__api__simple__convertir_artista_group_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "convertir_artista_group",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_id_performer = <i64>::sse_decode(&mut deserializer);
+            let api_name = <Option<String>>::sse_decode(&mut deserializer);
+            let api_start_date = <Option<String>>::sse_decode(&mut deserializer);
+            let api_end_date = <Option<String>>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| {
+                transform_result_sse::<_, String>((move || {
+                    let output_ok = crate::api::simple::convertir_artista_group(
+                        api_id_performer,
+                        api_name,
+                        api_start_date,
+                        api_end_date,
+                    )?;
+                    std::result::Result::Ok(output_ok)
+                })())
+            }
+        },
+    )
+}
+fn wire__crate__api__simple__convertir_artista_person_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "convertir_artista_person",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_id_performer = <i64>::sse_decode(&mut deserializer);
+            let api_stage_name = <Option<String>>::sse_decode(&mut deserializer);
+            let api_real_name = <Option<String>>::sse_decode(&mut deserializer);
+            let api_birth_date = <Option<String>>::sse_decode(&mut deserializer);
+            let api_death_date = <Option<String>>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| {
+                transform_result_sse::<_, String>((move || {
+                    let output_ok = crate::api::simple::convertir_artista_person(
+                        api_id_performer,
+                        api_stage_name,
+                        api_real_name,
+                        api_birth_date,
+                        api_death_date,
                     )?;
                     std::result::Result::Ok(output_ok)
                 })())
@@ -430,11 +555,24 @@ fn pde_ffi_dispatcher_primary_impl(
     // Codec=Pde (Serialization + dispatch), see doc to use other codecs
     match func_id {
         1 => wire__crate__api__simple__actualizar_grupo_impl(port, ptr, rust_vec_len, data_len),
-        2 => wire__crate__api__simple__actualizar_persona_impl(port, ptr, rust_vec_len, data_len),
-        3 => wire__crate__api__simple__actualizar_rola_impl(port, ptr, rust_vec_len, data_len),
-        4 => wire__crate__api__simple__ejecutar_minero_impl(port, ptr, rust_vec_len, data_len),
-        5 => wire__crate__api__simple__obtener_portada_impl(port, ptr, rust_vec_len, data_len),
-        6 => wire__crate__api__simple__obtener_rolas_bd_impl(port, ptr, rust_vec_len, data_len),
+        2 => wire__crate__api__simple__actualizar_in_group_impl(port, ptr, rust_vec_len, data_len),
+        3 => wire__crate__api__simple__actualizar_persona_impl(port, ptr, rust_vec_len, data_len),
+        4 => wire__crate__api__simple__actualizar_rola_impl(port, ptr, rust_vec_len, data_len),
+        5 => wire__crate__api__simple__convertir_artista_group_impl(
+            port,
+            ptr,
+            rust_vec_len,
+            data_len,
+        ),
+        6 => wire__crate__api__simple__convertir_artista_person_impl(
+            port,
+            ptr,
+            rust_vec_len,
+            data_len,
+        ),
+        7 => wire__crate__api__simple__ejecutar_minero_impl(port, ptr, rust_vec_len, data_len),
+        8 => wire__crate__api__simple__obtener_portada_impl(port, ptr, rust_vec_len, data_len),
+        9 => wire__crate__api__simple__obtener_rolas_bd_impl(port, ptr, rust_vec_len, data_len),
         _ => unreachable!(),
     }
 }

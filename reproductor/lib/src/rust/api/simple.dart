@@ -66,6 +66,44 @@ Future<bool> actualizarGrupo({
   nuevaEndDate: nuevaEndDate,
 );
 
+Future<bool> convertirArtistaPerson({
+  required PlatformInt64 idPerformer,
+  String? stageName,
+  String? realName,
+  String? birthDate,
+  String? deathDate,
+}) => RustLib.instance.api.crateApiSimpleConvertirArtistaPerson(
+  idPerformer: idPerformer,
+  stageName: stageName,
+  realName: realName,
+  birthDate: birthDate,
+  deathDate: deathDate,
+);
+
+Future<bool> convertirArtistaGroup({
+  required PlatformInt64 idPerformer,
+  String? name,
+  String? startDate,
+  String? endDate,
+}) => RustLib.instance.api.crateApiSimpleConvertirArtistaGroup(
+  idPerformer: idPerformer,
+  name: name,
+  startDate: startDate,
+  endDate: endDate,
+);
+
+Future<bool> actualizarInGroup({
+  required PlatformInt64 idPersonActual,
+  required PlatformInt64 idGroupActual,
+  required PlatformInt64 idPersonNuevo,
+  required PlatformInt64 idGroupNuevo,
+}) => RustLib.instance.api.crateApiSimpleActualizarInGroup(
+  idPersonActual: idPersonActual,
+  idGroupActual: idGroupActual,
+  idPersonNuevo: idPersonNuevo,
+  idGroupNuevo: idGroupNuevo,
+);
+
 class RolaDto {
   final PlatformInt64 idRola;
   final String path;

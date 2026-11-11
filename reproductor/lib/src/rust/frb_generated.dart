@@ -67,7 +67,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.13.0';
 
   @override
-  int get rustContentHash => -1825778993;
+  int get rustContentHash => -280603729;
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
@@ -84,6 +84,13 @@ abstract class RustLibApi extends BaseApi {
     String? nuevoName,
     String? nuevaStartDate,
     String? nuevaEndDate,
+  });
+
+  Future<bool> crateApiSimpleActualizarInGroup({
+    required PlatformInt64 idPersonActual,
+    required PlatformInt64 idGroupActual,
+    required PlatformInt64 idPersonNuevo,
+    required PlatformInt64 idGroupNuevo,
   });
 
   Future<bool> crateApiSimpleActualizarPersona({
@@ -105,6 +112,21 @@ abstract class RustLibApi extends BaseApi {
     PlatformInt64? nuevoTrack,
     PlatformInt64? nuevoYear,
     String? nuevoGenre,
+  });
+
+  Future<bool> crateApiSimpleConvertirArtistaGroup({
+    required PlatformInt64 idPerformer,
+    String? name,
+    String? startDate,
+    String? endDate,
+  });
+
+  Future<bool> crateApiSimpleConvertirArtistaPerson({
+    required PlatformInt64 idPerformer,
+    String? stageName,
+    String? realName,
+    String? birthDate,
+    String? deathDate,
   });
 
   Future<BigInt> crateApiSimpleEjecutarMinero({required String rutaMusica});
@@ -162,6 +184,50 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
+  Future<bool> crateApiSimpleActualizarInGroup({
+    required PlatformInt64 idPersonActual,
+    required PlatformInt64 idGroupActual,
+    required PlatformInt64 idPersonNuevo,
+    required PlatformInt64 idGroupNuevo,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_i_64(idPersonActual, serializer);
+          sse_encode_i_64(idGroupActual, serializer);
+          sse_encode_i_64(idPersonNuevo, serializer);
+          sse_encode_i_64(idGroupNuevo, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 2,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_bool,
+          decodeErrorData: sse_decode_String,
+        ),
+        constMeta: kCrateApiSimpleActualizarInGroupConstMeta,
+        argValues: [idPersonActual, idGroupActual, idPersonNuevo, idGroupNuevo],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiSimpleActualizarInGroupConstMeta =>
+      const TaskConstMeta(
+        debugName: "actualizar_in_group",
+        argNames: [
+          "idPersonActual",
+          "idGroupActual",
+          "idPersonNuevo",
+          "idGroupNuevo",
+        ],
+      );
+
+  @override
   Future<bool> crateApiSimpleActualizarPersona({
     required PlatformInt64 idPerson,
     String? nombre,
@@ -183,7 +249,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 2,
+            funcId: 3,
             port: port_,
           );
         },
@@ -246,7 +312,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 3,
+            funcId: 4,
             port: port_,
           );
         },
@@ -288,6 +354,92 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
+  Future<bool> crateApiSimpleConvertirArtistaGroup({
+    required PlatformInt64 idPerformer,
+    String? name,
+    String? startDate,
+    String? endDate,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_i_64(idPerformer, serializer);
+          sse_encode_opt_String(name, serializer);
+          sse_encode_opt_String(startDate, serializer);
+          sse_encode_opt_String(endDate, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 5,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_bool,
+          decodeErrorData: sse_decode_String,
+        ),
+        constMeta: kCrateApiSimpleConvertirArtistaGroupConstMeta,
+        argValues: [idPerformer, name, startDate, endDate],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiSimpleConvertirArtistaGroupConstMeta =>
+      const TaskConstMeta(
+        debugName: "convertir_artista_group",
+        argNames: ["idPerformer", "name", "startDate", "endDate"],
+      );
+
+  @override
+  Future<bool> crateApiSimpleConvertirArtistaPerson({
+    required PlatformInt64 idPerformer,
+    String? stageName,
+    String? realName,
+    String? birthDate,
+    String? deathDate,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_i_64(idPerformer, serializer);
+          sse_encode_opt_String(stageName, serializer);
+          sse_encode_opt_String(realName, serializer);
+          sse_encode_opt_String(birthDate, serializer);
+          sse_encode_opt_String(deathDate, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 6,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_bool,
+          decodeErrorData: sse_decode_String,
+        ),
+        constMeta: kCrateApiSimpleConvertirArtistaPersonConstMeta,
+        argValues: [idPerformer, stageName, realName, birthDate, deathDate],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiSimpleConvertirArtistaPersonConstMeta =>
+      const TaskConstMeta(
+        debugName: "convertir_artista_person",
+        argNames: [
+          "idPerformer",
+          "stageName",
+          "realName",
+          "birthDate",
+          "deathDate",
+        ],
+      );
+
+  @override
   Future<BigInt> crateApiSimpleEjecutarMinero({required String rutaMusica}) {
     return handler.executeNormal(
       NormalTask(
@@ -297,7 +449,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 4,
+            funcId: 7,
             port: port_,
           );
         },
@@ -328,7 +480,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 5,
+            funcId: 8,
             port: port_,
           );
         },
@@ -355,7 +507,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 6,
+            funcId: 9,
             port: port_,
           );
         },

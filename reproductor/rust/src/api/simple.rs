@@ -215,3 +215,60 @@ pub fn actualizar_grupo(
         nueva_end_date.as_deref(),
     ).map_err(|e| format!("Error modificando el SQL: {}", e))
 }
+
+pub fn convertir_artista_person(
+    id_performer: i64,
+    stage_name: Option<String>,
+    real_name: Option<String>,
+    birth_date: Option<String>,
+    death_date: Option<String>
+) -> Result<bool, String> {
+    let mut conn = nucleo_dao::dao::conectar_db()
+        .map_err(|e| format!("Error en la conexión con la base de datos {}", e))?;
+
+    nucleo_dao::dao::convertir_unknown_person(
+        &mut conn, 
+        id_performer, 
+        stage_name.as_deref(), 
+        real_name.as_deref(), 
+        birth_date.as_deref(), 
+        death_date.as_deref(),
+    ).map_err(|e| format!("Error en la conversion: {}",e))
+}
+
+pub fn convertir_artista_group(
+    id_performer: i64,
+    name: Option<String>,
+    start_date: Option<String>,
+    end_date: Option<String>,
+) -> Result<bool, String> {
+    let mut conn = nucleo_dao::dao::conectar_db()
+        .map_err(|e| format!("Error en la conexión con la base de datos {}", e))?;
+
+    nucleo_dao::dao::convertir_unknown_group(
+        &mut conn, 
+        id_performer, 
+        name.as_deref(), 
+        start_date.as_deref(), 
+        end_date.as_deref(), 
+    ).map_err(|e| format!("Error en la conversion: {}",e))
+}
+
+//Para las relaciones entre person y group  
+pub fn actualizar_in_group(
+    id_person_actual: i64,
+    id_group_actual: i64,
+    id_person_nuevo: i64,
+    id_group_nuevo: i64,
+) -> Result<bool, String> {
+    let conn = nucleo_dao::dao::conectar_db()
+        .map_err(|e| format!("Error conectando la base de datos: {}", e))?;
+
+    nucleo_dao::dao::modificar_in_group(
+        &conn,
+        id_person_actual,
+        id_group_actual,
+        id_person_nuevo,
+        id_group_nuevo,
+    ).map_err(|e| format!("Error modificando relación in_group: {}", e))
+}
