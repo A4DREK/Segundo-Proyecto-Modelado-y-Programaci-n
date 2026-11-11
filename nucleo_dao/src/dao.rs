@@ -430,6 +430,57 @@ pub fn modificar_rola(
     Ok(true)
 
 }
+
+pub fn convertir_unknown_group(
+    conn: &mut Connection,
+    id_performer: i64,
+    nuevo_name: Option<&str>,
+    start_date: Option<&str>,
+    end_date: Option<&str>
+)-> Result<bool> {
+    let tx = conn.transaction()?;
+
+    tx.execute(
+        "UPDATE performers SET id_type = 1, name = ?1 WHERE id_performer = ?2", 
+        params![nuevo_name, id_performer]
+    )?;
+
+    tx.execute(
+        "INSERT OR REPLACE INTO groups (id_group, name, start_date, end_date)
+        VALUES (?1, ?2, ?3, ?4)", 
+        params![id_performer, nuevo_name, start_date, end_date],
+    )?;
+
+    tx.commit()?;
+    Ok(true)
+}
+
+pub fn convertir_unknown_person(
+    conn: &mut Connection,
+    id_performer: i64,
+    stage_name: Option<&str>,
+    real_name: Option<&str>,
+    birth_date: Option<&str>,
+    death_date: Option<&str>,
+) -> Result<bool> {
+    let stage_final = verificar_texto(stage_name, "Unknown Person");
+    let tx = conn.transaction()?;
+
+    tx.execute(
+        "UPDATE performers SET id_type = 0, name = ?1 WHERE id_performer = ?2",
+        params![stage_final, id_performer]
+    )?;
+
+    tx.execute(
+        "INSERT OR REPLACE INTO persons (id_person, stage_name, real_name, birth_date, death_date)
+        VALUES (?1, ?2, ?3, ?4, ?5)", 
+        params![id_performer, stage_final, real_name, birth_date, death_date]
+    )?;
+
+    tx.commit()?;
+    Ok(true)
+}
+
 //Función auxiliar para poder verificar que el título de ya sea, el artista, el track o el álbum no sea ""
 fn verificar_texto<'a>(texto: Option<&'a str>, texto_predeterminado: &'a str) -> &'a str {
 
