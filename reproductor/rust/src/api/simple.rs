@@ -55,26 +55,126 @@ pub fn obtener_rolas_bd() -> Result<Vec<RolaDto>, String> {
 pub fn actualizar_rola(
     id_rola: i64,
     nuevo_title: Option<String>,
+    nuevo_artista: Option<String>,
+    nuevo_album: Option<String>,
+    actualizar_artista: bool,
+    actualizar_album: bool,
     nuevo_track: Option<i64>,
     nuevo_year: Option<i64>,
     nuevo_genre: Option<String>,
 ) -> Result<bool, String> {
+    
     let conn = nucleo_dao::dao::conectar_db()
-        .map_err(|e| format!("Error al conectar con la base de datos: {}", e))?;
+        .map_err(|e| format!("Error DB: {}", e))?;
 
+    
+    let datos_actuales = conn.query_row(
+        "SELECT r.id_album, a.path, a.year 
+        FROM rolas r 
+        LEFT JOIN albums a ON r.id_album = a.id_album 
+        WHERE r.id_rola = ?1",
+        [id_rola],
+        |r| {
+            let id_a = r.get::<_, i64>(0)?;
+            let path_a = r.get::<_, Option<String>>(1).unwrap_or(None).unwrap_or_default();
+            let year_a = r.get::<_, Option<i64>>(2).unwrap_or(None);
+            Ok((id_a, path_a, year_a))
+        },
+    );
 
+    let (id_album_actual, path_album_actual, year_album_actual) = match datos_actuales {
+        Ok(datos) => datos,
+        Err(_) => return Err("No se encontró la canción original".to_string()),
+    };
+
+    let mut id_nuevo_performer: Option<i64> = None;
+    let mut id_nuevo_album: Option<i64> = None;
+
+    if let Some(artista) = &nuevo_artista {
+        let id_perf = nucleo_dao::dao::obtener_crear_performer(&conn, Some(artista), 2)
+            .map_err(|e| format!("Error obteniendo artista: {}", e))?;
+        
+        if actualizar_artista {
+            conn.execute(
+                "UPDATE rolas SET id_performer = ?1 WHERE id_album = ?2",
+                rusqlite::params![id_perf, id_album_actual],
+            ).map_err(|e| format!("Error en modificar al artista: {}", e))?;
+        }
+        
+        id_nuevo_performer = Some(id_perf);
+    }
+
+    if let Some(album_name) = &nuevo_album {
+        if actualizar_album {
+            let id_existente: Option<i64> = conn.query_row(
+                "SELECT id_album FROM albums WHERE name = ?1 AND path = ?2",
+                rusqlite::params![album_name, &path_album_actual],
+                |r| r.get(0)
+            ).ok(); 
+
+            if let Some(id_destino) = id_existente {
+                if id_destino != id_album_actual {
+                    // Si ya existe, MUDAMOS todas las canciones de este álbum al existente
+                    conn.execute(
+                        "UPDATE rolas SET id_album = ?1 WHERE id_album = ?2",
+                        rusqlite::params![id_destino, id_album_actual]
+                    ).map_err(|e| format!("Error fusionando álbumes: {}", e))?;
+                    
+                    id_nuevo_album = Some(id_destino);
+                }
+            } else {
+                // Si no existe, entonces se renombra al actual
+                let modificado = nucleo_dao::dao::modificar_album(
+                    &conn, 
+                    id_album_actual, 
+                    None, 
+                    Some(album_name), 
+                    year_album_actual
+                ).map_err(|e| format!("Error renombrando álbum masivo: {}", e))?;
+                
+                if !modificado {
+                    return Err("Fallo interno al renombrar el álbum masivo".to_string());
+                }
+            }
+        } else {
+            let id_alb = nucleo_dao::dao::obtener_crear_album(
+                &conn, 
+                &path_album_actual, 
+                Some(album_name), 
+                year_album_actual
+            ).map_err(|e| format!("Error obteniendo/creando álbum individual: {}", e))?;
+            
+            if id_alb != id_album_actual {
+                id_nuevo_album = Some(id_alb);
+            }
+        }
+    }
+
+    
     nucleo_dao::dao::modificar_rola(
         &conn,
         id_rola,
-        None,
-        None,
-        None,
+        id_nuevo_performer, 
+        id_nuevo_album,
+        None, 
         nuevo_title.as_deref(),
         nuevo_track,
         nuevo_year,
         nuevo_genre.as_deref(),
-    ).map_err(|e| format!("Error al modificar el SQL: {}", e))
-}   
+    ).map_err(|e| format!("Error actualizando track individual: {}", e))?;
+
+    //Matar huérfanos (De vdd ese término es demasiado surreal wtf)
+    let _ = conn.execute(
+        "DELETE FROM albums WHERE NOT EXISTS (SELECT 1 FROM rolas WHERE rolas.id_album = albums.id_album)",
+        [],
+    );
+
+    let _ = conn.execute(
+        "DELETE FROM performers WHERE NOT EXISTS (SELECT 1 FROM rolas WHERE rolas.id_performer = performers.id_performer)",
+        [],
+    );
+    Ok(true)
+}
 
 pub fn actualizar_persona(
     id_person: i64,

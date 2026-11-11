@@ -131,8 +131,8 @@ pub fn obtener_crear_group(
 
     tx.execute(
         "INSERT OR IGNORE INTO groups (id_group, name, start_date, end_date)
-         VALUES (?1, ?2, ?3, ?4)",
-         params![id_group, final_nombre, start_date, end_date],
+        VALUES (?1, ?2, ?3, ?4)",
+        params![id_group, final_nombre, start_date, end_date],
     )?;
 
     tx.commit()?;
@@ -167,7 +167,9 @@ pub fn obtener_crear_album(
     //Verificamos que el álbum ya exista por su ruta o su nombre
 
     let id_existente: Option<i64> = connection
-        .query_row("SELECT id_album FROM albums WHERE path = ?1", [path], |r| r.get(0))
+        .query_row("SELECT id_album FROM albums WHERE path = ?1 AND name = ?2",
+        params![path,final_name],
+        |r| r.get(0))
         .optional()?;
 
     if let Some(id) = id_existente {
@@ -265,9 +267,9 @@ pub fn modificar_person(
     //Actualizamos persons
     tx.execute(
         "UPDATE persons 
-         SET stage_name = ?1, real_name = ?2, birth_date = ?3, death_date = ?4 
-         WHERE id_person = ?5",
-         params![stage_final, nuevo_real_name, nuevo_birth_date, nuevo_death_date, id_person],
+        SET stage_name = ?1, real_name = ?2, birth_date = ?3, death_date = ?4 
+        WHERE id_person = ?5",
+        params![stage_final, nuevo_real_name, nuevo_birth_date, nuevo_death_date, id_person],
     )?;
 
     tx.commit()?;
@@ -461,9 +463,9 @@ pub fn obtener_todas_las_rolas(connection: &Connection) -> Result<Vec<RolaBD>> {
             r.track, 
             r.year, 
             r.genre
-         FROM rolas r
-         LEFT JOIN performers p ON r.id_performer = p.id_performer
-         LEFT JOIN albums a ON r.id_album = a.id_album"
+        FROM rolas r
+        LEFT JOIN performers p ON r.id_performer = p.id_performer
+        LEFT JOIN albums a ON r.id_album = a.id_album"
     )?;
 
     let rolas_iter = stmt.query_map([], |row| {
@@ -484,6 +486,34 @@ pub fn obtener_todas_las_rolas(connection: &Connection) -> Result<Vec<RolaBD>> {
         rolas.push(rola?);
     }
     Ok(rolas)
+}
+
+//Inicia la parte de las funciones para poder implementar en la parte de la edición de las entradas de la BD
+
+pub fn modificar_artista_album(
+    conn: &mut Connection,
+    id_rola: i64,
+    nuevo_artist: &str,
+) -> Result<bool> {
+    let tx = conn.transaction()?;
+    let id_nuevo_performer = obtener_crear_performer(&tx, Some(nuevo_artist), 2)?;
+
+    let id_album: Option<i64> = tx.query_row(
+        "SELECT id_album FROM rolas WHERE id_rola = ?1", 
+        [id_rola], 
+        |r| r.get(0),
+    ).optional()?;
+
+    if let Some(id_album) = id_album {
+        tx.execute(
+            "UPDATE rolas SET id_performer = ?1 WHERE id_album = ?2",
+            params![id_nuevo_performer, id_album],
+        )?;
+        tx.commit()?;
+        Ok(true)
+    }else {
+        Ok(false)
+    }
 }
 
 #[cfg(test)]

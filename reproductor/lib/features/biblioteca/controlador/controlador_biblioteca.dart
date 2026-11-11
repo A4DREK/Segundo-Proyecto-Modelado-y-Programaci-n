@@ -164,48 +164,81 @@ class BibliotecaControlador extends ChangeNotifier {
 
 
   Future<void> editarCancion({
+    required int index,
     required int idRola,
-    required String titulo,
-    int? track,
-    int? year,
-    String? genero,
-  }) async{
+    String? nuevoTitulo,
+    String? nuevoArtista,
+    String? nuevoAlbum, 
+    String? nuevoTrack,
+    int? nuevoYear,
+    String? nuevoGenero,
+    required bool actualizarArtista,
+    required bool actualizarAlbum,
+  }) async {
     try {
-      final exito = await rust_api.actualizarRola(
+      final exitoRola = await rust_api.actualizarRola(
         idRola: idRola,
-        nuevoTitle: titulo,
-        nuevoTrack: track,
-        nuevoYear: year,
-        nuevoGenre: genero,
+        nuevoTitle: nuevoTitulo,
+        nuevoArtista: nuevoArtista,
+        nuevoAlbum: nuevoAlbum, 
+        actualizarAlbum: actualizarAlbum,
+        actualizarArtista: actualizarArtista,
+        nuevoTrack: nuevoTrack != null ? int.tryParse(nuevoTrack) : null,
+        nuevoYear: nuevoYear,
+        nuevoGenre: nuevoGenero,
       );
 
-      if(!exito) return;
-
-      final index = rolas.indexWhere((c) => c.idRola == idRola);
-
-      if(index != -1) {
-        final cancionActual = rolas[index];
-        rolas[index] = Rola(
-            idRola: cancionActual.idRola,
-            path: cancionActual.path,
-            performerName: cancionActual.performerName,
-            artistAlbum: cancionActual.artistAlbum,
-            albumName: cancionActual.albumName,
-            title: titulo,
-            track: track?.toString(), 
-            year: year,
-            genre: genero,
-            frontCover: cancionActual.frontCover, 
-            artistPortrait: cancionActual.artistPortrait,
-        );
+      if (!exitoRola) return; 
         
+      final albumOriginal = rolas[index].albumName;
+
+      //Si se selecciono alguna de las casillas prosigue 
+      if (actualizarAlbum || actualizarArtista) {
+        for (int i = 0; i < rolas.length; i++) {
+          if (rolas[i].albumName == albumOriginal) {
+            rolas[i] = _copiarConNuevosDatos(
+              rolas[i], 
+              albumName: actualizarAlbum ? nuevoAlbum : null,
+              artista: actualizarArtista ? nuevoArtista : null,
+            );
+          }
+        }
       }
 
-      notifyListeners();
-
-    }catch(e) {
+      if (index != -1) {
+        rolas[index] = _copiarConNuevosDatos(
+          rolas[index],
+          titulo: nuevoTitulo,
+          artista: nuevoArtista,
+          albumName: nuevoAlbum, 
+          track: nuevoTrack,
+          year: nuevoYear,
+          genero: nuevoGenero,
+        );
+      }
+        
+        notifyListeners();
+      
+    } catch(e) {
       debugPrint("Error editando la canción: [$e]");
     }
+  }
+
+  //Método auxiliar para la parte de copiar los datos para del artista que se deben de copiar 
+  Rola _copiarConNuevosDatos(Rola c, {String? titulo, String? artista,String? albumName, String? track, int? year, String? genero}) {
+    return Rola(
+      idRola: c.idRola,
+      path: c.path,
+      performerName: artista ?? c.performerName,
+      artistAlbum: c.artistAlbum,
+      albumName: albumName ?? c.albumName,
+      title: titulo ?? c.title,
+      track: track ?? c.track,
+      year: year ?? c.year,
+      genre: genero ?? c.genre,
+      frontCover: c.frontCover,
+      artistPortrait: c.artistPortrait,
+    );
   }
 
 }

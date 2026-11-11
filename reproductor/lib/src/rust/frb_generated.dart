@@ -98,6 +98,10 @@ abstract class RustLibApi extends BaseApi {
   Future<bool> crateApiSimpleActualizarRola({
     required PlatformInt64 idRola,
     String? nuevoTitle,
+    String? nuevoArtista,
+    String? nuevoAlbum,
+    required bool actualizarArtista,
+    required bool actualizarAlbum,
     PlatformInt64? nuevoTrack,
     PlatformInt64? nuevoYear,
     String? nuevoGenre,
@@ -218,6 +222,10 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   Future<bool> crateApiSimpleActualizarRola({
     required PlatformInt64 idRola,
     String? nuevoTitle,
+    String? nuevoArtista,
+    String? nuevoAlbum,
+    required bool actualizarArtista,
+    required bool actualizarAlbum,
     PlatformInt64? nuevoTrack,
     PlatformInt64? nuevoYear,
     String? nuevoGenre,
@@ -228,6 +236,10 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           final serializer = SseSerializer(generalizedFrbRustBinding);
           sse_encode_i_64(idRola, serializer);
           sse_encode_opt_String(nuevoTitle, serializer);
+          sse_encode_opt_String(nuevoArtista, serializer);
+          sse_encode_opt_String(nuevoAlbum, serializer);
+          sse_encode_bool(actualizarArtista, serializer);
+          sse_encode_bool(actualizarAlbum, serializer);
           sse_encode_opt_box_autoadd_i_64(nuevoTrack, serializer);
           sse_encode_opt_box_autoadd_i_64(nuevoYear, serializer);
           sse_encode_opt_String(nuevoGenre, serializer);
@@ -243,7 +255,17 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeErrorData: sse_decode_String,
         ),
         constMeta: kCrateApiSimpleActualizarRolaConstMeta,
-        argValues: [idRola, nuevoTitle, nuevoTrack, nuevoYear, nuevoGenre],
+        argValues: [
+          idRola,
+          nuevoTitle,
+          nuevoArtista,
+          nuevoAlbum,
+          actualizarArtista,
+          actualizarAlbum,
+          nuevoTrack,
+          nuevoYear,
+          nuevoGenre,
+        ],
         apiImpl: this,
       ),
     );
@@ -255,6 +277,10 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         argNames: [
           "idRola",
           "nuevoTitle",
+          "nuevoArtista",
+          "nuevoAlbum",
+          "actualizarArtista",
+          "actualizarAlbum",
           "nuevoTrack",
           "nuevoYear",
           "nuevoGenre",

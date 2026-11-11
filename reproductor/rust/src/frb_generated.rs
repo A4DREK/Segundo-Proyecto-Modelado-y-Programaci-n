@@ -157,6 +157,10 @@ fn wire__crate__api__simple__actualizar_rola_impl(
                 flutter_rust_bridge::for_generated::SseDeserializer::new(message);
             let api_id_rola = <i64>::sse_decode(&mut deserializer);
             let api_nuevo_title = <Option<String>>::sse_decode(&mut deserializer);
+            let api_nuevo_artista = <Option<String>>::sse_decode(&mut deserializer);
+            let api_nuevo_album = <Option<String>>::sse_decode(&mut deserializer);
+            let api_actualizar_artista = <bool>::sse_decode(&mut deserializer);
+            let api_actualizar_album = <bool>::sse_decode(&mut deserializer);
             let api_nuevo_track = <Option<i64>>::sse_decode(&mut deserializer);
             let api_nuevo_year = <Option<i64>>::sse_decode(&mut deserializer);
             let api_nuevo_genre = <Option<String>>::sse_decode(&mut deserializer);
@@ -166,6 +170,10 @@ fn wire__crate__api__simple__actualizar_rola_impl(
                     let output_ok = crate::api::simple::actualizar_rola(
                         api_id_rola,
                         api_nuevo_title,
+                        api_nuevo_artista,
+                        api_nuevo_album,
+                        api_actualizar_artista,
+                        api_actualizar_album,
                         api_nuevo_track,
                         api_nuevo_year,
                         api_nuevo_genre,
