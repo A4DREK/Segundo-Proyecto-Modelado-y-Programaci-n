@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../controlador/controlador_biblioteca.dart';
+import '../../../biblioteca/controlador/controlador_biblioteca.dart';
 
-Future<void> mostrarDialogoEdicion(
+Future<void> mostrarDialogoEdicionCancion(
   BuildContext context, 
   Rola cancion, 
   BibliotecaControlador controlador,
