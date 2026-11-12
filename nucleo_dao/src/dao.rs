@@ -84,6 +84,29 @@ pub fn obtener_crear_performer(
     Ok(connection.last_insert_rowid())
 }
 
+//Método agregado para poder arreglar (duhh) la parte de la edición de la GUI que solamente edita un track
+pub fn buscar_o_crear_performer_por_nombre(
+    connection: &Connection,
+    name: Option<&str>,
+) -> Result<i64> {
+    let final_nombre = verificar_texto(name, "Unknown Performer");
+
+    // ORDER BY id_type ASC prioriza Person (0) y Group (1) sobre Unknown (2)
+    let id_existente: Option<i64> = connection
+        .query_row(
+            "SELECT id_performer FROM performers WHERE name = ?1 ORDER BY id_type ASC LIMIT 1",
+            params![final_nombre],
+            |r| r.get(0),
+        )
+        .optional()?;
+
+    if let Some(id) = id_existente {
+        return Ok(id);
+    }
+
+    obtener_crear_performer(connection, Some(final_nombre), 2)
+}
+
 pub fn obtener_crear_person(
     connection: &mut Connection,
     nombre: Option<&str>,
@@ -577,6 +600,34 @@ pub fn modificar_artista_album(
     }
 }
 
+//Esta función se crea para poder mostrar los datos del person o del group en la GUI al momento de editar :)
+pub fn obtener_datos_artista(
+    connection: &Connection,
+    id_performer: i64,
+    id_type: i64,
+) -> Result<(Option<String>, Option<String>, Option<String>, Option<String>)> {
+    if id_type == 0 {
+        let res = connection
+            .query_row(
+                "SELECT stage_name, real_name, birth_date, death_date FROM persons WHERE id_person = ?1",
+                [id_performer],
+                |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?, r.get(3)?)),
+            )
+            .optional()?;
+        Ok(res.unwrap_or((None, None, None, None)))
+    } else if id_type == 1 {
+        let res = connection
+            .query_row(
+                "SELECT name, start_date, end_date FROM groups WHERE id_group = ?1",
+                [id_performer],
+                |r| Ok((r.get(0)?, None, r.get(1)?, r.get(2)?)),
+            )
+            .optional()?;
+        Ok(res.unwrap_or((None, None, None, None)))
+    } else {
+        Ok((None, None, None, None))
+    }
+}
 #[cfg(test)]
 mod test{
 

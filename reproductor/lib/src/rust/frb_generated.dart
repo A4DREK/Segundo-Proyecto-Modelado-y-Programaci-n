@@ -67,7 +67,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.13.0';
 
   @override
-  int get rustContentHash => -280603729;
+  int get rustContentHash => 514393336;
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
@@ -130,6 +130,11 @@ abstract class RustLibApi extends BaseApi {
   });
 
   Future<BigInt> crateApiSimpleEjecutarMinero({required String rutaMusica});
+
+  Future<ArtistaDetalleDto> crateApiSimpleObtenerDetalleArtista({
+    required PlatformInt64 idPerformer,
+    required int artistType,
+  });
 
   Future<Uint8List?> crateApiSimpleObtenerPortada({required String rutaMp3});
 
@@ -471,6 +476,41 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
+  Future<ArtistaDetalleDto> crateApiSimpleObtenerDetalleArtista({
+    required PlatformInt64 idPerformer,
+    required int artistType,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_i_64(idPerformer, serializer);
+          sse_encode_i_32(artistType, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 8,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_artista_detalle_dto,
+          decodeErrorData: sse_decode_String,
+        ),
+        constMeta: kCrateApiSimpleObtenerDetalleArtistaConstMeta,
+        argValues: [idPerformer, artistType],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiSimpleObtenerDetalleArtistaConstMeta =>
+      const TaskConstMeta(
+        debugName: "obtener_detalle_artista",
+        argNames: ["idPerformer", "artistType"],
+      );
+
+  @override
   Future<Uint8List?> crateApiSimpleObtenerPortada({required String rutaMp3}) {
     return handler.executeNormal(
       NormalTask(
@@ -480,7 +520,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 8,
+            funcId: 9,
             port: port_,
           );
         },
@@ -507,7 +547,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 9,
+            funcId: 10,
             port: port_,
           );
         },
@@ -529,6 +569,20 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   String dco_decode_String(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw as String;
+  }
+
+  @protected
+  ArtistaDetalleDto dco_decode_artista_detalle_dto(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 4)
+      throw Exception('unexpected arr length: expect 4 but see ${arr.length}');
+    return ArtistaDetalleDto(
+      nombre: dco_decode_opt_String(arr[0]),
+      realName: dco_decode_opt_String(arr[1]),
+      fechaInicio: dco_decode_opt_String(arr[2]),
+      fechaFin: dco_decode_opt_String(arr[3]),
+    );
   }
 
   @protected
@@ -634,6 +688,23 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var inner = sse_decode_list_prim_u_8_strict(deserializer);
     return utf8.decoder.convert(inner);
+  }
+
+  @protected
+  ArtistaDetalleDto sse_decode_artista_detalle_dto(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_nombre = sse_decode_opt_String(deserializer);
+    var var_realName = sse_decode_opt_String(deserializer);
+    var var_fechaInicio = sse_decode_opt_String(deserializer);
+    var var_fechaFin = sse_decode_opt_String(deserializer);
+    return ArtistaDetalleDto(
+      nombre: var_nombre,
+      realName: var_realName,
+      fechaInicio: var_fechaInicio,
+      fechaFin: var_fechaFin,
+    );
   }
 
   @protected
@@ -772,6 +843,18 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   void sse_encode_String(String self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_list_prim_u_8_strict(utf8.encoder.convert(self), serializer);
+  }
+
+  @protected
+  void sse_encode_artista_detalle_dto(
+    ArtistaDetalleDto self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_String(self.nombre, serializer);
+    sse_encode_opt_String(self.realName, serializer);
+    sse_encode_opt_String(self.fechaInicio, serializer);
+    sse_encode_opt_String(self.fechaFin, serializer);
   }
 
   @protected

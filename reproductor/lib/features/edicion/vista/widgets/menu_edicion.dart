@@ -34,7 +34,8 @@ void mostrarMenuEdicion(BuildContext contextScreen, Rola cancion) {
                 mostrarDialogoEdicionArtista(
                   contextScreen,
                   cancionActualizada.idPerformer,
-                  cancionActualizada.tipoArtista
+                  cancionActualizada.tipoArtista,
+                  cancionActualizada.performerName,
                 );
               }
             ),

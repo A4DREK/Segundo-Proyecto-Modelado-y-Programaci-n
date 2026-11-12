@@ -68,6 +68,7 @@ class BibliotecaControlador extends ChangeNotifier {
   String? rutaMusica;
 
   final Set<int> _portadasSolicitadas = {};
+  final Map<int, Uint8List> _cachePortadas  = {};
 
   bool get bibliotecaVacia => !charged && rolas.isEmpty;
 
@@ -134,23 +135,30 @@ class BibliotecaControlador extends ChangeNotifier {
   //Para el procesamiento de las portadas de los álbumes 
   Future<void> cargarPortada(int index) async {
     if (index < 0 || index >= rolas.length) return;
-    if (rolas[index].frontCover != null || _portadasSolicitadas.contains(index)) return;
 
-    _portadasSolicitadas.add(index);
+        final rola = rolas[index];
+        if (rola.frontCover != null) return;
 
-    try{
-      final bytes = await rust_api.obtenerPortada(rutaMp3: rolas[index].path);
-      if (bytes != null && bytes.isNotEmpty) {
-        debugPrint("Carátula cargada ($index): ${bytes.length} bytes");
-        rolas[index].frontCover = bytes;
-        notifyListeners();
-      } else {
-          debugPrint("No se encontró carátula ID3 en: ${rolas[index].path}");
-      }
+        //Si ya se renderizó la portada se asigna sin releer otra vez el archivo
+        if (_cachePortadas.containsKey(rola.idRola)) {
+          rola.frontCover = _cachePortadas[rola.idRola];
+          Future.microtask(notifyListeners);
+          return;
+        }
 
-    }catch(e) {
-      debugPrint("Error extrayendo la caratula: $e");
-    }
+        if (_portadasSolicitadas.contains(rola.idRola)) return;
+        _portadasSolicitadas.add(rola.idRola);
+
+        try {
+          final bytes = await rust_api.obtenerPortada(rutaMp3: rola.path);
+          if (bytes != null && bytes.isNotEmpty) {
+            _cachePortadas[rola.idRola] = bytes;
+            rola.frontCover = bytes;
+            notifyListeners();
+          }
+        } catch (e) {
+          debugPrint("Error extrayendo la carátula: $e");
+        }
   }
 
   Future<void> limpiarBiblioteca() async {

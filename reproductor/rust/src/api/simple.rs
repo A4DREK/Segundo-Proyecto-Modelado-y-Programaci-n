@@ -96,7 +96,7 @@ pub fn actualizar_rola(
     let mut id_nuevo_album: Option<i64> = None;
 
     if let Some(artista) = &nuevo_artista {
-        let id_perf = nucleo_dao::dao::obtener_crear_performer(&conn, Some(artista), 2)
+        let id_perf = nucleo_dao::dao::buscar_o_crear_performer_por_nombre(&conn, Some(artista))
             .map_err(|e| format!("Error obteniendo artista: {}", e))?;
         
         if actualizar_artista {
@@ -175,7 +175,7 @@ pub fn actualizar_rola(
     );
 
     let _ = conn.execute(
-        "DELETE FROM performers WHERE NOT EXISTS (SELECT 1 FROM rolas WHERE rolas.id_performer = performers.id_performer)",
+        "DELETE FROM performers WHERE id_type = 2 AND NOT EXISTS (SELECT 1 FROM rolas WHERE rolas.id_performer = performers.id_performer)",
         [],
     );
     Ok(true)
@@ -192,7 +192,7 @@ pub fn actualizar_persona(
     let mut conn = nucleo_dao::dao::conectar_db()
         .map_err(|e| format!("Error al conectar con la base de datos: {}", e))?;
 
-    nucleo_dao::dao::modificar_person(
+    let exito = nucleo_dao::dao::modificar_person(
         &mut conn,
         id_person,
         nombre.as_deref(),
@@ -200,7 +200,12 @@ pub fn actualizar_persona(
         nuevo_real_name.as_deref(),
         nuevo_birth_date.as_deref(),
         nuevo_death_date.as_deref(),
-    ).map_err(|e| format!("Error modificando el SQL: {}", e))
+    ).map_err(|e| format!("Error modificando el SQL: {}", e))?;
+
+    if !exito {
+    return Err("No se encontró el artista en la base de datos para actualizarlo".to_string());
+    }
+    Ok(true)
 }
 
 pub fn actualizar_grupo(
@@ -212,13 +217,18 @@ pub fn actualizar_grupo(
     let mut conn = nucleo_dao::dao::conectar_db()
         .map_err(|e| format!("Error conectando la base de datos: {}", e))?;
 
-    nucleo_dao::dao::modificar_group(
+    let exito =nucleo_dao::dao::modificar_group(
         &mut conn,
         id_group,
         nuevo_name.as_deref(), 
         nueva_start_date.as_deref(), 
         nueva_end_date.as_deref(),
-    ).map_err(|e| format!("Error modificando el SQL: {}", e))
+    ).map_err(|e| format!("Error modificando el SQL: {}", e))?;
+
+    if !exito {
+    return Err("No se encontró el artista en la base de datos para actualizarlo".to_string());
+    }
+    Ok(true)
 }
 
 pub fn convertir_artista_person(
@@ -240,6 +250,9 @@ pub fn convertir_artista_person(
         death_date.as_deref(),
     ).map_err(|e| format!("Error en la conversion: {}",e))?;
 
+    if !exito {
+    return Err("No se encontró el artista en la base de datos para convertirlo".to_string());
+    }
     Ok(exito)
 }
 
@@ -252,13 +265,18 @@ pub fn convertir_artista_group(
     let mut conn = nucleo_dao::dao::conectar_db()
         .map_err(|e| format!("Error en la conexión con la base de datos {}", e))?;
 
-    nucleo_dao::dao::convertir_unknown_group(
+    let exito = nucleo_dao::dao::convertir_unknown_group(
         &mut conn, 
         id_performer, 
         name.as_deref(), 
         start_date.as_deref(), 
         end_date.as_deref(), 
-    ).map_err(|e| format!("Error en la conversion: {}",e))
+    ).map_err(|e| format!("Error en la conversion: {}",e))?;
+
+    if !exito {
+    return Err("No se encontró el artista en la base de datos para convertirlo".to_string());
+    }
+    Ok(true)
 }
 
 //Para las relaciones entre person y group  
@@ -278,4 +296,30 @@ pub fn actualizar_in_group(
         id_person_nuevo,
         id_group_nuevo,
     ).map_err(|e| format!("Error modificando relación in_group: {}", e))
+}
+
+pub struct ArtistaDetalleDto {
+    pub nombre: Option<String>,
+    pub real_name: Option<String>,
+    pub fecha_inicio: Option<String>, // birth_date o start_date depende del caso lol
+    pub fecha_fin: Option<String>,    // death_date o end_date igual que lo de arriba
+}
+
+pub fn obtener_detalle_artista(
+    id_performer: i64,
+    artist_type: i32,
+) -> Result<ArtistaDetalleDto, String> {
+    let conn = nucleo_dao::dao::conectar_db()
+        .map_err(|e| format!("Error conectando a SQLite: {}", e))?;
+
+    let (nombre, real_name, fecha_inicio, fecha_fin) =
+        nucleo_dao::dao::obtener_datos_artista(&conn, id_performer, artist_type as i64)
+            .map_err(|e| format!("Error consultando artista: {}", e))?;
+
+    Ok(ArtistaDetalleDto {
+        nombre,
+        real_name,
+        fecha_inicio,
+        fecha_fin,
+    })
 }

@@ -6,16 +6,37 @@ import '../../../biblioteca/controlador/controlador_biblioteca.dart';
 Future<void> mostrarDialogoEdicionArtista(
   BuildContext contextPantalla, 
   int idPerformer,
-  int tipoInicial, // 0 = Persona, 1 = Grupo, 2 = Unknown
+  int tipoInicial,
+  String? nombreInicial, // 0 = Persona, 1 = Grupo, 2 = Unknown
 ) async {
   final bibliotecaCtrl = contextPantalla.read<BibliotecaControlador>();
 
   int tipoSeleccionado = tipoInicial == 2 ? 0 : tipoInicial;
 
-  final nombreCtrl = TextEditingController(); 
+  final nombreCtrl = TextEditingController(text: nombreInicial ?? ''); 
   final realNameCtrl = TextEditingController();
   final fecha1Ctrl = TextEditingController(); 
   final fecha2Ctrl = TextEditingController(); 
+
+  //Esta parte es para cargar los datos del artista (person o group)
+  if (tipoInicial == 0 || tipoInicial == 1) {
+    try {
+      final detalle = await rust_api.obtenerDetalleArtista(
+        idPerformer: idPerformer,
+        artistType: tipoInicial,
+      );
+      if (detalle.nombre != null && detalle.nombre!.isNotEmpty) {
+        nombreCtrl.text = detalle.nombre!;
+      }
+      realNameCtrl.text = detalle.realName ?? '';
+      fecha1Ctrl.text = detalle.fechaInicio ?? '';
+      fecha2Ctrl.text = detalle.fechaFin ?? '';
+    } catch (e) {
+      debugPrint('Error cargando detalles del artista: $e');
+    }
+  }
+
+  if (!contextPantalla.mounted) return;
 
   final formKey = GlobalKey<FormState>();
 
@@ -43,7 +64,7 @@ Future<void> mostrarDialogoEdicionArtista(
                         },
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
-                          children: const [
+                          children: [
                             RadioListTile<int>(
                               value: 0,
                               title: Text('Persona'),
@@ -151,11 +172,7 @@ Future<void> mostrarDialogoEdicionArtista(
                         );
                       }
 
-                      bibliotecaCtrl.actualizarArtistaLocalmente(
-                        idPerformer: idPerformer,
-                        nuevoTipo: tipoSeleccionado,
-                        nuevoNombre: nuevoNombre,
-                      );
+                      await bibliotecaCtrl.cargarDatosBD();
 
                       if (dialogContext.mounted) {
                         Navigator.of(dialogContext).pop();

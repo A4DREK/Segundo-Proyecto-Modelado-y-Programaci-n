@@ -104,6 +104,45 @@ Future<bool> actualizarInGroup({
   idGroupNuevo: idGroupNuevo,
 );
 
+Future<ArtistaDetalleDto> obtenerDetalleArtista({
+  required PlatformInt64 idPerformer,
+  required int artistType,
+}) => RustLib.instance.api.crateApiSimpleObtenerDetalleArtista(
+  idPerformer: idPerformer,
+  artistType: artistType,
+);
+
+class ArtistaDetalleDto {
+  final String? nombre;
+  final String? realName;
+  final String? fechaInicio;
+  final String? fechaFin;
+
+  const ArtistaDetalleDto({
+    this.nombre,
+    this.realName,
+    this.fechaInicio,
+    this.fechaFin,
+  });
+
+  @override
+  int get hashCode =>
+      nombre.hashCode ^
+      realName.hashCode ^
+      fechaInicio.hashCode ^
+      fechaFin.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ArtistaDetalleDto &&
+          runtimeType == other.runtimeType &&
+          nombre == other.nombre &&
+          realName == other.realName &&
+          fechaInicio == other.fechaInicio &&
+          fechaFin == other.fechaFin;
+}
+
 class RolaDto {
   final PlatformInt64 idRola;
   final PlatformInt64 idPerformer;
