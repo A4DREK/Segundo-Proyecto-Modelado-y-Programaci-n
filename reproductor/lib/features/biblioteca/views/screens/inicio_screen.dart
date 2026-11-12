@@ -8,6 +8,8 @@ import 'package:reproductor/features/biblioteca/controlador/controlador_bibliote
 import 'package:reproductor/features/biblioteca/views/widgets/grid_albumes.dart';
 import 'package:reproductor/features/biblioteca/views/widgets/lista_albumes.dart';
 import 'package:reproductor/features/biblioteca/views/widgets/toggle_vista.dart';
+import 'package:reproductor/features/buscador/vista/widgets/barra_busqueda.dart';
+import 'package:reproductor/features/buscador/controlador/controlador_busqueda.dart';
 
 class InicioScreen extends StatelessWidget {
   const InicioScreen({super.key});
@@ -16,6 +18,7 @@ class InicioScreen extends StatelessWidget {
     Widget build(BuildContext context) {
 
       final controlador = context.watch<BibliotecaControlador>();
+      final busquedaCtrl = context.watch<BusquedaControlador>();
 
       return Padding(
         padding: const EdgeInsets.only(top: 40.0, right: 40, left: 40),
@@ -23,25 +26,7 @@ class InicioScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Barra de búsqueda superior
-            const SizedBox(
-              child: Row(
-                children: [
-                  Icon(
-                    CupertinoIcons.search,
-                    color: Colors.white,
-                  ),
-                  SizedBox(width: 10),
-                  Text(
-                    'Buscar',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            const BarraBusqueda(),
             const SizedBox(height: 40),
 
             // Título de la sección y botones de acción
@@ -88,14 +73,17 @@ class InicioScreen extends StatelessWidget {
 
             // Contenido principal (Minando, Cargando, Vacío o Lista/Grid)
             Expanded(
-              child: _construirContenido(controlador),
+              child: _construirContenido(controlador, busquedaCtrl),
             ),
           ],
         ),
       );
     }
 
-    Widget _construirContenido(BibliotecaControlador controlador) {
+    Widget _construirContenido(
+      BibliotecaControlador controlador,
+      BusquedaControlador busquedaCtrl,
+    ) {
       if (controlador.miner) {
         return const Center(
           child: Column(
@@ -160,9 +148,42 @@ class InicioScreen extends StatelessWidget {
           ),
         );
       }
+      final cancionesMostrar = busquedaCtrl.hayBusquedaActiva
+        ? busquedaCtrl.resultados
+        : controlador.rolas;
 
+      if (cancionesMostrar.isEmpty) {
+        return Center(
+          child: Text(
+            'No se encontraron resultados para "${busquedaCtrl.consulta}"',
+            style: const TextStyle(color: Colors.white70, fontSize: 15),
+          ),
+        );
+      }
       return controlador.viewGrid
-          ? GridAlbumes(canciones: controlador.rolas)
-          : ListaCanciones(canciones: controlador.rolas);
+          ? GridAlbumes(canciones: cancionesMostrar)
+          : ListaCanciones(canciones: cancionesMostrar);
     }
 }
+
+/* 
+    const SizedBox(
+              child: Row(
+                children: [
+                  Icon(
+                    CupertinoIcons.search,
+                    color: Colors.white,
+                  ),
+                  SizedBox(width: 10),
+                  Text(
+                    'Buscar',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ), 
+ */

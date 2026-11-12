@@ -7,6 +7,7 @@ import '../../../reproductor/views/screens/barra_reproduccion.dart';
 import '../../../reproductor/controlador/controlador_reproductor.dart';
 import '../../../edicion/controlador/controlador_edicion.dart';
 import '../../../biblioteca/controlador/controlador_biblioteca.dart';
+import '../../../buscador/controlador/controlador_busqueda.dart';
 
 class MainLayout extends StatelessWidget {
   const MainLayout({super.key});
@@ -18,6 +19,7 @@ class MainLayout extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => ReproductorControlador()),
         ChangeNotifierProvider(create: (_) => BibliotecaControlador()..cargarDatosBD()),
         ChangeNotifierProvider(create: (_) => EdicionControlador()),
+        ChangeNotifierProvider(create: (_) => BusquedaControlador()),
       ],
 
       child: MacosWindow(
