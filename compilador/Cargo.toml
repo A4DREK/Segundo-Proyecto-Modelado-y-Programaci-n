@@ -1,7 +1,0 @@
-[package]
-name = "compilador"
-version = "0.1.0"
-edition = "2024"
-
-[dependencies]
-  nucleo_dao = {path = "../nucleo_dao/"}
