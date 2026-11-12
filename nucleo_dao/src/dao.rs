@@ -6,6 +6,7 @@
 use dirs;
 use rusqlite::{params, Connection, Result, OptionalExtension};
 use std::{fs, path::PathBuf};
+use crate::modelos::*;
 
 pub fn obtener_ruta_db () -> Result<PathBuf, String> {
     
@@ -628,6 +629,62 @@ pub fn obtener_datos_artista(
         Ok((None, None, None, None))
     }
 }
+
+//todas estas funciones son para la parte de poder obtener miembros de un grupo, todas las personas y además eliminar relaciones, porque la
+//de agregar, ya está implementada
+
+pub fn obtener_miembros_de_grupo(connection: &Connection, id_group: i64) -> Result<Vec<MiembroBD>> {
+    let mut stmt = connection.prepare(
+        "SELECT p.id_person, p.stage_name, p.real_name
+        FROM persons p
+        INNER JOIN in_group ig ON p.id_person = ig.id_person
+        WHERE ig.id_group = ?1",
+    )?;
+
+    let iter = stmt.query_map([id_group], |row| {
+        Ok(MiembroBD {
+            id_person: row.get(0)?,
+            stage_name: row.get::<_, Option<String>>(1)?.unwrap_or_else(|| "Unknown Person".to_string()),
+            real_name: row.get(2)?,
+        })
+    })?;
+
+    let mut miembros = Vec::new();
+    for m in iter {
+        miembros.push(m?);
+    }
+    Ok(miembros)
+}
+
+pub fn obtener_todas_las_personas(connection: &Connection) -> Result<Vec<MiembroBD>> {
+    let mut stmt = connection.prepare(
+        "SELECT id_person, stage_name, real_name FROM persons ORDER BY stage_name ASC",
+    )?;
+
+    let iter = stmt.query_map([], |row| {
+        Ok(MiembroBD {
+            id_person: row.get(0)?,
+            stage_name: row.get::<_, Option<String>>(1)?.unwrap_or_else(|| "Unknown Person".to_string()),
+            real_name: row.get(2)?,
+        })
+    })?;
+
+    let mut personas = Vec::new();
+    for p in iter {
+        personas.push(p?);
+    }
+    Ok(personas)
+}
+
+pub fn eliminar_in_group(connection: &Connection, id_person: i64, id_group: i64) -> Result<bool> {
+    let filas = connection.execute(
+        "DELETE FROM in_group WHERE id_person = ?1 AND id_group = ?2",
+        params![id_person, id_group],
+    )?;
+    Ok(filas > 0)
+}
+
+
 #[cfg(test)]
 mod test{
 

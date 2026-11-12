@@ -67,7 +67,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.13.0';
 
   @override
-  int get rustContentHash => 514393336;
+  int get rustContentHash => -1741852597;
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
@@ -114,6 +114,11 @@ abstract class RustLibApi extends BaseApi {
     String? nuevoGenre,
   });
 
+  Future<bool> crateApiSimpleAgregarMiembroGrupo({
+    required PlatformInt64 idPerson,
+    required PlatformInt64 idGroup,
+  });
+
   Future<bool> crateApiSimpleConvertirArtistaGroup({
     required PlatformInt64 idPerformer,
     String? name,
@@ -131,14 +136,25 @@ abstract class RustLibApi extends BaseApi {
 
   Future<BigInt> crateApiSimpleEjecutarMinero({required String rutaMusica});
 
+  Future<bool> crateApiSimpleEliminarMiembroGrupo({
+    required PlatformInt64 idPerson,
+    required PlatformInt64 idGroup,
+  });
+
   Future<ArtistaDetalleDto> crateApiSimpleObtenerDetalleArtista({
     required PlatformInt64 idPerformer,
     required int artistType,
   });
 
+  Future<List<MiembroDto>> crateApiSimpleObtenerMiembrosGrupo({
+    required PlatformInt64 idGroup,
+  });
+
   Future<Uint8List?> crateApiSimpleObtenerPortada({required String rutaMp3});
 
   Future<List<RolaDto>> crateApiSimpleObtenerRolasBd();
+
+  Future<List<MiembroDto>> crateApiSimpleObtenerTodasLasPersonas();
 }
 
 class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
@@ -359,6 +375,41 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
+  Future<bool> crateApiSimpleAgregarMiembroGrupo({
+    required PlatformInt64 idPerson,
+    required PlatformInt64 idGroup,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_i_64(idPerson, serializer);
+          sse_encode_i_64(idGroup, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 5,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_bool,
+          decodeErrorData: sse_decode_String,
+        ),
+        constMeta: kCrateApiSimpleAgregarMiembroGrupoConstMeta,
+        argValues: [idPerson, idGroup],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiSimpleAgregarMiembroGrupoConstMeta =>
+      const TaskConstMeta(
+        debugName: "agregar_miembro_grupo",
+        argNames: ["idPerson", "idGroup"],
+      );
+
+  @override
   Future<bool> crateApiSimpleConvertirArtistaGroup({
     required PlatformInt64 idPerformer,
     String? name,
@@ -376,7 +427,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 5,
+            funcId: 6,
             port: port_,
           );
         },
@@ -417,7 +468,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 6,
+            funcId: 7,
             port: port_,
           );
         },
@@ -454,7 +505,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 7,
+            funcId: 8,
             port: port_,
           );
         },
@@ -476,6 +527,41 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
+  Future<bool> crateApiSimpleEliminarMiembroGrupo({
+    required PlatformInt64 idPerson,
+    required PlatformInt64 idGroup,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_i_64(idPerson, serializer);
+          sse_encode_i_64(idGroup, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 9,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_bool,
+          decodeErrorData: sse_decode_String,
+        ),
+        constMeta: kCrateApiSimpleEliminarMiembroGrupoConstMeta,
+        argValues: [idPerson, idGroup],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiSimpleEliminarMiembroGrupoConstMeta =>
+      const TaskConstMeta(
+        debugName: "eliminar_miembro_grupo",
+        argNames: ["idPerson", "idGroup"],
+      );
+
+  @override
   Future<ArtistaDetalleDto> crateApiSimpleObtenerDetalleArtista({
     required PlatformInt64 idPerformer,
     required int artistType,
@@ -489,7 +575,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 8,
+            funcId: 10,
             port: port_,
           );
         },
@@ -511,6 +597,39 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
+  Future<List<MiembroDto>> crateApiSimpleObtenerMiembrosGrupo({
+    required PlatformInt64 idGroup,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_i_64(idGroup, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 11,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_list_miembro_dto,
+          decodeErrorData: sse_decode_String,
+        ),
+        constMeta: kCrateApiSimpleObtenerMiembrosGrupoConstMeta,
+        argValues: [idGroup],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiSimpleObtenerMiembrosGrupoConstMeta =>
+      const TaskConstMeta(
+        debugName: "obtener_miembros_grupo",
+        argNames: ["idGroup"],
+      );
+
+  @override
   Future<Uint8List?> crateApiSimpleObtenerPortada({required String rutaMp3}) {
     return handler.executeNormal(
       NormalTask(
@@ -520,7 +639,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 9,
+            funcId: 12,
             port: port_,
           );
         },
@@ -547,7 +666,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 10,
+            funcId: 13,
             port: port_,
           );
         },
@@ -564,6 +683,36 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
   TaskConstMeta get kCrateApiSimpleObtenerRolasBdConstMeta =>
       const TaskConstMeta(debugName: "obtener_rolas_bd", argNames: []);
+
+  @override
+  Future<List<MiembroDto>> crateApiSimpleObtenerTodasLasPersonas() {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 14,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_list_miembro_dto,
+          decodeErrorData: sse_decode_String,
+        ),
+        constMeta: kCrateApiSimpleObtenerTodasLasPersonasConstMeta,
+        argValues: [],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiSimpleObtenerTodasLasPersonasConstMeta =>
+      const TaskConstMeta(
+        debugName: "obtener_todas_las_personas",
+        argNames: [],
+      );
 
   @protected
   String dco_decode_String(dynamic raw) {
@@ -616,6 +765,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  List<MiembroDto> dco_decode_list_miembro_dto(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_miembro_dto).toList();
+  }
+
+  @protected
   Uint8List dco_decode_list_prim_u_8_strict(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw as Uint8List;
@@ -625,6 +780,19 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   List<RolaDto> dco_decode_list_rola_dto(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return (raw as List<dynamic>).map(dco_decode_rola_dto).toList();
+  }
+
+  @protected
+  MiembroDto dco_decode_miembro_dto(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 3)
+      throw Exception('unexpected arr length: expect 3 but see ${arr.length}');
+    return MiembroDto(
+      idPerson: dco_decode_i_64(arr[0]),
+      stageName: dco_decode_String(arr[1]),
+      realName: dco_decode_opt_String(arr[2]),
+    );
   }
 
   @protected
@@ -738,6 +906,18 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  List<MiembroDto> sse_decode_list_miembro_dto(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <MiembroDto>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_miembro_dto(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
   Uint8List sse_decode_list_prim_u_8_strict(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var len_ = sse_decode_i_32(deserializer);
@@ -754,6 +934,19 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       ans_.add(sse_decode_rola_dto(deserializer));
     }
     return ans_;
+  }
+
+  @protected
+  MiembroDto sse_decode_miembro_dto(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_idPerson = sse_decode_i_64(deserializer);
+    var var_stageName = sse_decode_String(deserializer);
+    var var_realName = sse_decode_opt_String(deserializer);
+    return MiembroDto(
+      idPerson: var_idPerson,
+      stageName: var_stageName,
+      realName: var_realName,
+    );
   }
 
   @protected
@@ -891,6 +1084,18 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_list_miembro_dto(
+    List<MiembroDto> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_miembro_dto(item, serializer);
+    }
+  }
+
+  @protected
   void sse_encode_list_prim_u_8_strict(
     Uint8List self,
     SseSerializer serializer,
@@ -907,6 +1112,14 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     for (final item in self) {
       sse_encode_rola_dto(item, serializer);
     }
+  }
+
+  @protected
+  void sse_encode_miembro_dto(MiembroDto self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_64(self.idPerson, serializer);
+    sse_encode_String(self.stageName, serializer);
+    sse_encode_opt_String(self.realName, serializer);
   }
 
   @protected

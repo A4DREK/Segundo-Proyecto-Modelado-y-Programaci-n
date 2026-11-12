@@ -323,3 +323,62 @@ pub fn obtener_detalle_artista(
         fecha_fin,
     })
 }
+
+//Inicio de las funciones para las relaciones entre miembros y grupo
+pub struct MiembroDto {
+    pub id_person: i64,
+    pub stage_name: String,
+    pub real_name: Option<String>,
+}
+
+pub fn obtener_miembros_grupo(id_group: i64) -> Result<Vec<MiembroDto>, String> {
+    let conn = nucleo_dao::dao::conectar_db()
+        .map_err(|e| format!("Error conectando DB: {}", e))?;
+
+    let lista = nucleo_dao::dao::obtener_miembros_de_grupo(&conn, id_group)
+        .map_err(|e| format!("Error consultando miembros: {}", e))?;
+
+    Ok(lista
+        .into_iter()
+        .map(|m| MiembroDto {
+            id_person: m.id_person,
+            stage_name: m.stage_name,
+            real_name: m.real_name,
+        })
+        .collect())
+}
+
+pub fn obtener_todas_las_personas() -> Result<Vec<MiembroDto>, String> {
+    let conn = nucleo_dao::dao::conectar_db()
+        .map_err(|e| format!("Error conectando DB: {}", e))?;
+
+    let lista = nucleo_dao::dao::obtener_todas_las_personas(&conn)
+        .map_err(|e| format!("Error consultando personas: {}", e))?;
+
+    Ok(lista
+        .into_iter()
+        .map(|m| MiembroDto {
+            id_person: m.id_person,
+            stage_name: m.stage_name,
+            real_name: m.real_name,
+        })
+        .collect())
+}
+
+pub fn agregar_miembro_grupo(id_person: i64, id_group: i64) -> Result<bool, String> {
+    let conn = nucleo_dao::dao::conectar_db()
+        .map_err(|e| format!("Error conectando DB: {}", e))?;
+
+    nucleo_dao::dao::obtener_crear_in_group(&conn, id_person, id_group)
+        .map_err(|e| format!("Error agregando miembro: {}", e))?;
+
+    Ok(true)
+}
+
+pub fn eliminar_miembro_grupo(id_person: i64, id_group: i64) -> Result<bool, String> {
+    let conn = nucleo_dao::dao::conectar_db()
+        .map_err(|e| format!("Error conectando DB: {}", e))?;
+
+    nucleo_dao::dao::eliminar_in_group(&conn, id_person, id_group)
+        .map_err(|e| format!("Error eliminando miembro: {}", e))
+}

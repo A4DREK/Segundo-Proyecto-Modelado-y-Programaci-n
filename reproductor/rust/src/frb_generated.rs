@@ -39,7 +39,7 @@ flutter_rust_bridge::frb_generated_boilerplate!(
     default_rust_auto_opaque = RustAutoOpaqueMoi,
 );
 pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_VERSION: &str = "2.13.0";
-pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = 514393336;
+pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = -1741852597;
 
 // Section: executor
 
@@ -225,6 +225,41 @@ fn wire__crate__api__simple__actualizar_rola_impl(
         },
     )
 }
+fn wire__crate__api__simple__agregar_miembro_grupo_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "agregar_miembro_grupo",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_id_person = <i64>::sse_decode(&mut deserializer);
+            let api_id_group = <i64>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| {
+                transform_result_sse::<_, String>((move || {
+                    let output_ok =
+                        crate::api::simple::agregar_miembro_grupo(api_id_person, api_id_group)?;
+                    std::result::Result::Ok(output_ok)
+                })())
+            }
+        },
+    )
+}
 fn wire__crate__api__simple__convertir_artista_group_impl(
     port_: flutter_rust_bridge::for_generated::MessagePort,
     ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
@@ -342,6 +377,41 @@ fn wire__crate__api__simple__ejecutar_minero_impl(
         },
     )
 }
+fn wire__crate__api__simple__eliminar_miembro_grupo_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "eliminar_miembro_grupo",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_id_person = <i64>::sse_decode(&mut deserializer);
+            let api_id_group = <i64>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| {
+                transform_result_sse::<_, String>((move || {
+                    let output_ok =
+                        crate::api::simple::eliminar_miembro_grupo(api_id_person, api_id_group)?;
+                    std::result::Result::Ok(output_ok)
+                })())
+            }
+        },
+    )
+}
 fn wire__crate__api__simple__obtener_detalle_artista_impl(
     port_: flutter_rust_bridge::for_generated::MessagePort,
     ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
@@ -373,6 +443,39 @@ fn wire__crate__api__simple__obtener_detalle_artista_impl(
                         api_id_performer,
                         api_artist_type,
                     )?;
+                    std::result::Result::Ok(output_ok)
+                })())
+            }
+        },
+    )
+}
+fn wire__crate__api__simple__obtener_miembros_grupo_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "obtener_miembros_grupo",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_id_group = <i64>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| {
+                transform_result_sse::<_, String>((move || {
+                    let output_ok = crate::api::simple::obtener_miembros_grupo(api_id_group)?;
                     std::result::Result::Ok(output_ok)
                 })())
             }
@@ -444,6 +547,38 @@ fn wire__crate__api__simple__obtener_rolas_bd_impl(
         },
     )
 }
+fn wire__crate__api__simple__obtener_todas_las_personas_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "obtener_todas_las_personas",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            deserializer.end();
+            move |context| {
+                transform_result_sse::<_, String>((move || {
+                    let output_ok = crate::api::simple::obtener_todas_las_personas()?;
+                    std::result::Result::Ok(output_ok)
+                })())
+            }
+        },
+    )
+}
 
 // Section: dart2rust
 
@@ -492,6 +627,18 @@ impl SseDecode for i64 {
     }
 }
 
+impl SseDecode for Vec<crate::api::simple::MiembroDto> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut len_ = <i32>::sse_decode(deserializer);
+        let mut ans_ = Vec::with_capacity(len_ as usize);
+        for idx_ in 0..len_ {
+            ans_.push(<crate::api::simple::MiembroDto>::sse_decode(deserializer));
+        }
+        return ans_;
+    }
+}
+
 impl SseDecode for Vec<u8> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -513,6 +660,20 @@ impl SseDecode for Vec<crate::api::simple::RolaDto> {
             ans_.push(<crate::api::simple::RolaDto>::sse_decode(deserializer));
         }
         return ans_;
+    }
+}
+
+impl SseDecode for crate::api::simple::MiembroDto {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_idPerson = <i64>::sse_decode(deserializer);
+        let mut var_stageName = <String>::sse_decode(deserializer);
+        let mut var_realName = <Option<String>>::sse_decode(deserializer);
+        return crate::api::simple::MiembroDto {
+            id_person: var_idPerson,
+            stage_name: var_stageName,
+            real_name: var_realName,
+        };
     }
 }
 
@@ -615,27 +776,42 @@ fn pde_ffi_dispatcher_primary_impl(
         2 => wire__crate__api__simple__actualizar_in_group_impl(port, ptr, rust_vec_len, data_len),
         3 => wire__crate__api__simple__actualizar_persona_impl(port, ptr, rust_vec_len, data_len),
         4 => wire__crate__api__simple__actualizar_rola_impl(port, ptr, rust_vec_len, data_len),
-        5 => wire__crate__api__simple__convertir_artista_group_impl(
+        5 => {
+            wire__crate__api__simple__agregar_miembro_grupo_impl(port, ptr, rust_vec_len, data_len)
+        }
+        6 => wire__crate__api__simple__convertir_artista_group_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        6 => wire__crate__api__simple__convertir_artista_person_impl(
+        7 => wire__crate__api__simple__convertir_artista_person_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        7 => wire__crate__api__simple__ejecutar_minero_impl(port, ptr, rust_vec_len, data_len),
-        8 => wire__crate__api__simple__obtener_detalle_artista_impl(
+        8 => wire__crate__api__simple__ejecutar_minero_impl(port, ptr, rust_vec_len, data_len),
+        9 => {
+            wire__crate__api__simple__eliminar_miembro_grupo_impl(port, ptr, rust_vec_len, data_len)
+        }
+        10 => wire__crate__api__simple__obtener_detalle_artista_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        9 => wire__crate__api__simple__obtener_portada_impl(port, ptr, rust_vec_len, data_len),
-        10 => wire__crate__api__simple__obtener_rolas_bd_impl(port, ptr, rust_vec_len, data_len),
+        11 => {
+            wire__crate__api__simple__obtener_miembros_grupo_impl(port, ptr, rust_vec_len, data_len)
+        }
+        12 => wire__crate__api__simple__obtener_portada_impl(port, ptr, rust_vec_len, data_len),
+        13 => wire__crate__api__simple__obtener_rolas_bd_impl(port, ptr, rust_vec_len, data_len),
+        14 => wire__crate__api__simple__obtener_todas_las_personas_impl(
+            port,
+            ptr,
+            rust_vec_len,
+            data_len,
+        ),
         _ => unreachable!(),
     }
 }
@@ -674,6 +850,28 @@ impl flutter_rust_bridge::IntoIntoDart<crate::api::simple::ArtistaDetalleDto>
     for crate::api::simple::ArtistaDetalleDto
 {
     fn into_into_dart(self) -> crate::api::simple::ArtistaDetalleDto {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::simple::MiembroDto {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.id_person.into_into_dart().into_dart(),
+            self.stage_name.into_into_dart().into_dart(),
+            self.real_name.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::simple::MiembroDto
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::simple::MiembroDto>
+    for crate::api::simple::MiembroDto
+{
+    fn into_into_dart(self) -> crate::api::simple::MiembroDto {
         self
     }
 }
@@ -742,6 +940,16 @@ impl SseEncode for i64 {
     }
 }
 
+impl SseEncode for Vec<crate::api::simple::MiembroDto> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(self.len() as _, serializer);
+        for item in self {
+            <crate::api::simple::MiembroDto>::sse_encode(item, serializer);
+        }
+    }
+}
+
 impl SseEncode for Vec<u8> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -759,6 +967,15 @@ impl SseEncode for Vec<crate::api::simple::RolaDto> {
         for item in self {
             <crate::api::simple::RolaDto>::sse_encode(item, serializer);
         }
+    }
+}
+
+impl SseEncode for crate::api::simple::MiembroDto {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i64>::sse_encode(self.id_person, serializer);
+        <String>::sse_encode(self.stage_name, serializer);
+        <Option<String>>::sse_encode(self.real_name, serializer);
     }
 }
 

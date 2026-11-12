@@ -112,6 +112,29 @@ Future<ArtistaDetalleDto> obtenerDetalleArtista({
   artistType: artistType,
 );
 
+Future<List<MiembroDto>> obtenerMiembrosGrupo({
+  required PlatformInt64 idGroup,
+}) => RustLib.instance.api.crateApiSimpleObtenerMiembrosGrupo(idGroup: idGroup);
+
+Future<List<MiembroDto>> obtenerTodasLasPersonas() =>
+    RustLib.instance.api.crateApiSimpleObtenerTodasLasPersonas();
+
+Future<bool> agregarMiembroGrupo({
+  required PlatformInt64 idPerson,
+  required PlatformInt64 idGroup,
+}) => RustLib.instance.api.crateApiSimpleAgregarMiembroGrupo(
+  idPerson: idPerson,
+  idGroup: idGroup,
+);
+
+Future<bool> eliminarMiembroGrupo({
+  required PlatformInt64 idPerson,
+  required PlatformInt64 idGroup,
+}) => RustLib.instance.api.crateApiSimpleEliminarMiembroGrupo(
+  idPerson: idPerson,
+  idGroup: idGroup,
+);
+
 class ArtistaDetalleDto {
   final String? nombre;
   final String? realName;
@@ -141,6 +164,31 @@ class ArtistaDetalleDto {
           realName == other.realName &&
           fechaInicio == other.fechaInicio &&
           fechaFin == other.fechaFin;
+}
+
+class MiembroDto {
+  final PlatformInt64 idPerson;
+  final String stageName;
+  final String? realName;
+
+  const MiembroDto({
+    required this.idPerson,
+    required this.stageName,
+    this.realName,
+  });
+
+  @override
+  int get hashCode =>
+      idPerson.hashCode ^ stageName.hashCode ^ realName.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is MiembroDto &&
+          runtimeType == other.runtimeType &&
+          idPerson == other.idPerson &&
+          stageName == other.stageName &&
+          realName == other.realName;
 }
 
 class RolaDto {

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:reproductor/src/rust/api/simple.dart' as rust_api;
 import '../../../biblioteca/controlador/controlador_biblioteca.dart';
+import 'dialog_miembros_grupo.dart';
+
 
 Future<void> mostrarDialogoEdicionArtista(
   BuildContext contextPantalla, 
@@ -118,8 +120,24 @@ Future<void> mostrarDialogoEdicionArtista(
                       ElevatedButton.icon(
                         icon: const Icon(Icons.people),
                         label: const Text('Gestionar Miembros'),
-                        onPressed: () {
-                          // TODO: Implementar vista de miembros
+                        onPressed: () async {
+                          if (!formKey.currentState!.validate()) return;
+                          //Para esta parte el usuario debe de estar seguro que ese grupo es un grupo y no quiera cambiarlo a artista lol
+                          String? valOrNull(String text) => text.trim().isEmpty ? null : text.trim();
+                          final nombreGrupo = valOrNull(nombreCtrl.text) ?? 'Unknown Group';
+                          if (tipoInicial == 2) {
+                            await rust_api.convertirArtistaGroup(
+                              idPerformer: idPerformer,
+                              name: nombreGrupo,
+                              startDate: valOrNull(fecha1Ctrl.text),
+                              endDate: valOrNull(fecha2Ctrl.text),
+                            );
+                            tipoInicial = 1;
+                            await bibliotecaCtrl.cargarDatosBD();
+                          }
+
+                          if (!context.mounted) return;
+                          await mostrarDialogoMiembros(context, idPerformer, nombreGrupo);
                         },
                       ),
                     ],

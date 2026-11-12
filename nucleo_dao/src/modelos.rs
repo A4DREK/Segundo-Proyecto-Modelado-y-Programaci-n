@@ -9,6 +9,7 @@ pub enum Types  {
 }
 
 //Checa que el int dado corresponda con el Type
+//NIÑO IDIOTA(yo) creó estas structs y nunca las implemento en el DAO .-. 
 impl TryFrom<i64> for Types {
     type Error = String;
 
@@ -66,6 +67,7 @@ pub struct Album {
     pub year: Option<i64>,
 }
 
+//Estas structs sí están implementadas equisde 
 //Estructura de la tabla principal rolas
 #[derive(Debug, Clone)]
 pub struct Rola {
@@ -79,3 +81,9 @@ pub struct Rola {
     pub genre: Option<String>,
 }
 
+//Esta estructura es para ver las relaciones entre miembros y el grupo
+pub struct MiembroBD {
+    pub id_person: i64,
+    pub stage_name: String,
+    pub real_name: Option<String>,
+}
