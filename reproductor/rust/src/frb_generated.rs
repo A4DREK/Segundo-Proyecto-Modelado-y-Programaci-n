@@ -511,6 +511,8 @@ impl SseDecode for crate::api::simple::RolaDto {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
         let mut var_idRola = <i64>::sse_decode(deserializer);
+        let mut var_idPerformer = <i64>::sse_decode(deserializer);
+        let mut var_artistType = <i32>::sse_decode(deserializer);
         let mut var_path = <String>::sse_decode(deserializer);
         let mut var_titulo = <String>::sse_decode(deserializer);
         let mut var_artista = <String>::sse_decode(deserializer);
@@ -520,6 +522,8 @@ impl SseDecode for crate::api::simple::RolaDto {
         let mut var_genre = <Option<String>>::sse_decode(deserializer);
         return crate::api::simple::RolaDto {
             id_rola: var_idRola,
+            id_performer: var_idPerformer,
+            artist_type: var_artistType,
             path: var_path,
             titulo: var_titulo,
             artista: var_artista,
@@ -596,6 +600,8 @@ impl flutter_rust_bridge::IntoDart for crate::api::simple::RolaDto {
     fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
         [
             self.id_rola.into_into_dart().into_dart(),
+            self.id_performer.into_into_dart().into_dart(),
+            self.artist_type.into_into_dart().into_dart(),
             self.path.into_into_dart().into_dart(),
             self.titulo.into_into_dart().into_dart(),
             self.artista.into_into_dart().into_dart(),
@@ -708,6 +714,8 @@ impl SseEncode for crate::api::simple::RolaDto {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
         <i64>::sse_encode(self.id_rola, serializer);
+        <i64>::sse_encode(self.id_performer, serializer);
+        <i32>::sse_encode(self.artist_type, serializer);
         <String>::sse_encode(self.path, serializer);
         <String>::sse_encode(self.titulo, serializer);
         <String>::sse_encode(self.artista, serializer);

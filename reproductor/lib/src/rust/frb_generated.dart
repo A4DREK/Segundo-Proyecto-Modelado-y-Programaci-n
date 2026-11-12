@@ -601,17 +601,19 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   RolaDto dco_decode_rola_dto(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
-    if (arr.length != 8)
-      throw Exception('unexpected arr length: expect 8 but see ${arr.length}');
+    if (arr.length != 10)
+      throw Exception('unexpected arr length: expect 10 but see ${arr.length}');
     return RolaDto(
       idRola: dco_decode_i_64(arr[0]),
-      path: dco_decode_String(arr[1]),
-      titulo: dco_decode_String(arr[2]),
-      artista: dco_decode_String(arr[3]),
-      album: dco_decode_String(arr[4]),
-      track: dco_decode_opt_String(arr[5]),
-      year: dco_decode_opt_box_autoadd_i_32(arr[6]),
-      genre: dco_decode_opt_String(arr[7]),
+      idPerformer: dco_decode_i_64(arr[1]),
+      artistType: dco_decode_i_32(arr[2]),
+      path: dco_decode_String(arr[3]),
+      titulo: dco_decode_String(arr[4]),
+      artista: dco_decode_String(arr[5]),
+      album: dco_decode_String(arr[6]),
+      track: dco_decode_opt_String(arr[7]),
+      year: dco_decode_opt_box_autoadd_i_32(arr[8]),
+      genre: dco_decode_opt_String(arr[9]),
     );
   }
 
@@ -731,6 +733,8 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   RolaDto sse_decode_rola_dto(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var var_idRola = sse_decode_i_64(deserializer);
+    var var_idPerformer = sse_decode_i_64(deserializer);
+    var var_artistType = sse_decode_i_32(deserializer);
     var var_path = sse_decode_String(deserializer);
     var var_titulo = sse_decode_String(deserializer);
     var var_artista = sse_decode_String(deserializer);
@@ -740,6 +744,8 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var var_genre = sse_decode_opt_String(deserializer);
     return RolaDto(
       idRola: var_idRola,
+      idPerformer: var_idPerformer,
+      artistType: var_artistType,
       path: var_path,
       titulo: var_titulo,
       artista: var_artista,
@@ -870,6 +876,8 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   void sse_encode_rola_dto(RolaDto self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_i_64(self.idRola, serializer);
+    sse_encode_i_64(self.idPerformer, serializer);
+    sse_encode_i_32(self.artistType, serializer);
     sse_encode_String(self.path, serializer);
     sse_encode_String(self.titulo, serializer);
     sse_encode_String(self.artista, serializer);

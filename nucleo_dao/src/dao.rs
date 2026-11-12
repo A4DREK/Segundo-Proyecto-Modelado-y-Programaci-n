@@ -466,10 +466,14 @@ pub fn convertir_unknown_person(
     let stage_final = verificar_texto(stage_name, "Unknown Person");
     let tx = conn.transaction()?;
 
-    tx.execute(
+    let filas_afectadas = tx.execute(
         "UPDATE performers SET id_type = 0, name = ?1 WHERE id_performer = ?2",
         params![stage_final, id_performer]
     )?;
+
+    if filas_afectadas == 0 {
+        return Ok(false); 
+    }
 
     tx.execute(
         "INSERT OR REPLACE INTO persons (id_person, stage_name, real_name, birth_date, death_date)
@@ -501,6 +505,8 @@ pub struct RolaBD{
     pub track: Option<i64>,
     pub year: Option<i64>,
     pub genre: Option<String>,
+    pub id_performer: Option<i64>, 
+    pub id_type: Option<i64>,
 }
 
 pub fn obtener_todas_las_rolas(connection: &Connection) -> Result<Vec<RolaBD>> {
@@ -513,7 +519,9 @@ pub fn obtener_todas_las_rolas(connection: &Connection) -> Result<Vec<RolaBD>> {
             a.name AS album_name, 
             r.track, 
             r.year, 
-            r.genre
+            r.genre,
+            r.id_performer,
+            p.id_type
         FROM rolas r
         LEFT JOIN performers p ON r.id_performer = p.id_performer
         LEFT JOIN albums a ON r.id_album = a.id_album"
@@ -529,6 +537,8 @@ pub fn obtener_todas_las_rolas(connection: &Connection) -> Result<Vec<RolaBD>> {
             track: row.get(5)?,
             year: row.get(6)?,
             genre: row.get(7)?,
+            id_performer: row.get(8)?,
+            id_type: row.get(9)?,
         })
     })?;
 

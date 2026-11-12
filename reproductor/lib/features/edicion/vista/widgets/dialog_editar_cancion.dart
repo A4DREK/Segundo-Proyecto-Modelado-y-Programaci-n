@@ -108,7 +108,7 @@ Future<void> mostrarDialogoEdicionCancion(
                   if (formKey.currentState!.validate()) {
                     final yearValidado = int.tryParse(yearCtrl.text.trim());
 
-                    final int index = bibliotecaCtrl  .rolas.indexOf(cancion);
+                    final int index = bibliotecaCtrl.rolas.indexWhere((r) => r.idRola == cancion.idRola);
 
                     // Enviar variables al controlador
                     await edicionCtrl.editarCancion(

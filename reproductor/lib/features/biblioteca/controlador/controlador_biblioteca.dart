@@ -6,6 +6,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class Rola {
   final int idRola;
+  final int idPerformer;
+  final int tipoArtista;
   final String path;
   final String title;
   final String performerName;
@@ -23,6 +25,8 @@ class Rola {
 
   Rola({
     required this.idRola,
+    required this.idPerformer,
+    required this.tipoArtista,
     required this.path,
     required this.title,
     required this.performerName,
@@ -49,6 +53,8 @@ class Rola {
       track: dto.track,
       year: dto.year,
       genre: dto.genre,
+      idPerformer: dto.idPerformer.toInt(),
+      tipoArtista: dto.artistType.toInt(),
     );
   }
 
@@ -164,5 +170,32 @@ class BibliotecaControlador extends ChangeNotifier {
 
   void refrescarInterfaz() {
     notifyListeners();
+  }
+
+void actualizarArtistaLocalmente({
+    required int idPerformer,
+    required int nuevoTipo,
+    String? nuevoNombre,
+  }) {
+    for (int i = 0; i < rolas.length; i++) {
+      if (rolas[i].idPerformer == idPerformer) {
+        rolas[i] = Rola(
+          idRola: rolas[i].idRola,
+          path: rolas[i].path,
+          performerName: nuevoNombre ?? rolas[i].performerName,
+          artistAlbum: rolas[i].artistAlbum,
+          albumName: rolas[i].albumName,
+          title: rolas[i].title,
+          track: rolas[i].track,
+          year: rolas[i].year,
+          genre: rolas[i].genre,
+          frontCover: rolas[i].frontCover,         
+          artistPortrait: rolas[i].artistPortrait, 
+          idPerformer: rolas[i].idPerformer,
+          tipoArtista: nuevoTipo,                      
+        );
+      }
+    }
+    notifyListeners(); 
   }
 }

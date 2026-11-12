@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:reproductor/features/edicion/vista/widgets/dialog_editar_album.dart';
 import '../../../biblioteca/controlador/controlador_biblioteca.dart';
 import 'dialog_editar_cancion.dart';
 
@@ -24,6 +26,16 @@ void mostrarMenuEdicion(BuildContext contextScreen, Rola cancion) {
               onTap: () {
                 Navigator.pop(contextMenu);
                 //Parte del archivo de dialog_editar_artista(aún no se crea lol)
+                final bibliotecaCtrl = contextScreen.read<BibliotecaControlador>();
+                final cancionActualizada = bibliotecaCtrl.rolas.firstWhere(
+                  (r) => r.idRola == cancion.idRola,
+                  orElse: () => cancion,
+                );
+                mostrarDialogoEdicionArtista(
+                  contextScreen,
+                  cancionActualizada.idPerformer,
+                  cancionActualizada.tipoArtista
+                );
               }
             ),
           ],

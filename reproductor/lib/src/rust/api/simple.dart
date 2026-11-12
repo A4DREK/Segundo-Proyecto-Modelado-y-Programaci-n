@@ -106,6 +106,8 @@ Future<bool> actualizarInGroup({
 
 class RolaDto {
   final PlatformInt64 idRola;
+  final PlatformInt64 idPerformer;
+  final int artistType;
   final String path;
   final String titulo;
   final String artista;
@@ -116,6 +118,8 @@ class RolaDto {
 
   const RolaDto({
     required this.idRola,
+    required this.idPerformer,
+    required this.artistType,
     required this.path,
     required this.titulo,
     required this.artista,
@@ -128,6 +132,8 @@ class RolaDto {
   @override
   int get hashCode =>
       idRola.hashCode ^
+      idPerformer.hashCode ^
+      artistType.hashCode ^
       path.hashCode ^
       titulo.hashCode ^
       artista.hashCode ^
@@ -142,6 +148,8 @@ class RolaDto {
       other is RolaDto &&
           runtimeType == other.runtimeType &&
           idRola == other.idRola &&
+          idPerformer == other.idPerformer &&
+          artistType == other.artistType &&
           path == other.path &&
           titulo == other.titulo &&
           artista == other.artista &&

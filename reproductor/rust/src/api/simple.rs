@@ -6,6 +6,8 @@ use minero::procesar_id3v2::obtener_datos_id3;
 //Se implementaran las funciones del minero para poder utilizarlas en FLUTTER
 pub struct RolaDto {
     pub id_rola: i64,
+    pub id_performer: i64,
+    pub artist_type: i32,
     pub path: String,
     pub titulo: String,
     pub artista: String,
@@ -23,7 +25,8 @@ pub fn ejecutar_minero(ruta_musica: String) -> Result<usize, String> {
 
 pub fn obtener_portada(ruta_mp3: String) -> Result<Option<Vec<u8>>, String> {
     let path = Path::new(&ruta_mp3);
-    let metadatos = obtener_datos_id3(path)?;
+    let metadatos
+    = obtener_datos_id3(path)?;
     Ok(metadatos.front_cover)
 }
 
@@ -46,6 +49,8 @@ pub fn obtener_rolas_bd() -> Result<Vec<RolaDto>, String> {
             track: rola.track.map(|t| t.to_string()),
             year: rola.year.map(|y| y as i32),
             genre: rola.genre,
+            id_performer: rola.id_performer.unwrap_or(0), 
+            artist_type: rola.id_type.unwrap_or(2) as i32
         })
         .collect();
 
@@ -226,14 +231,16 @@ pub fn convertir_artista_person(
     let mut conn = nucleo_dao::dao::conectar_db()
         .map_err(|e| format!("Error en la conexión con la base de datos {}", e))?;
 
-    nucleo_dao::dao::convertir_unknown_person(
+    let exito= nucleo_dao::dao::convertir_unknown_person(
         &mut conn, 
         id_performer, 
         stage_name.as_deref(), 
         real_name.as_deref(), 
         birth_date.as_deref(), 
         death_date.as_deref(),
-    ).map_err(|e| format!("Error en la conversion: {}",e))
+    ).map_err(|e| format!("Error en la conversion: {}",e))?;
+
+    Ok(exito)
 }
 
 pub fn convertir_artista_group(

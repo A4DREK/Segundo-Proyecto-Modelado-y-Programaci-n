@@ -38,7 +38,7 @@ Future<void> editarCancion({
         
       final albumOriginal = bibliotecaCtrl.rolas[index].albumName;
 
-      // Si se seleccionó alguna de las casillas prosigue 
+      // Si se seleccionó alguna de las casillas se prosigue 
       if (actualizarAlbum || actualizarArtista) {
         for (int i = 0; i < bibliotecaCtrl.rolas.length; i++) {
           if (bibliotecaCtrl.rolas[i].albumName == albumOriginal) {
@@ -75,7 +75,18 @@ Future<void> editarCancion({
   }
 
   //Método auxiliar para la parte de copiar los datos para del artista que se deben de copiar 
-  Rola _copiarConNuevosDatos(Rola c, {String? titulo, String? artista,String? albumName, String? track, int? year, String? genero}) {
+  Rola _copiarConNuevosDatos(
+    Rola c, {
+      String? titulo, 
+      String? artista,
+      String? albumName, 
+      String? track, 
+      bool isEditing = true, 
+      int? year, 
+      String? genero,
+      int? idPerformer,
+      int? tipoArtista,
+    }) {
     return Rola(
       idRola: c.idRola,
       path: c.path,
@@ -83,11 +94,13 @@ Future<void> editarCancion({
       artistAlbum: c.artistAlbum,
       albumName: albumName ?? c.albumName,
       title: titulo ?? c.title,
-      track: track ?? c.track,
-      year: year ?? c.year,
-      genre: genero ?? c.genre,
+      track: track ?? c.track, 
+      year: isEditing ? year : c.year,
+      genre: isEditing ? genero : c.genre,
       frontCover: c.frontCover,
       artistPortrait: c.artistPortrait,
+      idPerformer: idPerformer ?? c.idPerformer,
+      tipoArtista: tipoArtista ?? c.tipoArtista,
     );
   }
 }
