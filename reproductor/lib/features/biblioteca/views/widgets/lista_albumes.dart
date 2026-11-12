@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:reproductor/features/biblioteca/controlador/controlador_biblioteca.dart';
 import '../../../reproductor/controlador/controlador_reproductor.dart';
 import '../../../edicion/vista/widgets/menu_edicion.dart';
+//import '../../../edicion/controlador/controlador_edicion.dart';
 
 class ListaCanciones extends StatelessWidget {
   final List<Rola> canciones;
@@ -80,8 +81,8 @@ class ListaCanciones extends StatelessWidget {
                   tooltip: 'Opciones de edición',
                   onPressed: () {
                     //Falta la parte del controlador
-                    final controlador = context.read<BibliotecaControlador>();
-                    mostrarMenuEdicion(context, cancion, controlador);
+                    //final controlador = context.read<EdicionControlador>();
+                    mostrarMenuEdicion(context, cancion);
                   },
                 ),
                 GestureDetector(

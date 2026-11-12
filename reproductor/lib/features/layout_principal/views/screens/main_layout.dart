@@ -5,6 +5,8 @@ import 'package:provider/provider.dart';
 import '../../../biblioteca/views/screens/inicio_screen.dart';
 import '../../../reproductor/views/screens/barra_reproduccion.dart'; 
 import '../../../reproductor/controlador/controlador_reproductor.dart';
+import '../../../edicion/controlador/controlador_edicion.dart';
+import '../../../biblioteca/controlador/controlador_biblioteca.dart';
 
 class MainLayout extends StatelessWidget {
   const MainLayout({super.key});
@@ -13,7 +15,9 @@ class MainLayout extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => ReproductorControlador())
+        ChangeNotifierProvider(create: (_) => ReproductorControlador()),
+        ChangeNotifierProvider(create: (_) => BibliotecaControlador()..cargarDatosBD()),
+        ChangeNotifierProvider(create: (_) => EdicionControlador()),
       ],
 
       child: MacosWindow(

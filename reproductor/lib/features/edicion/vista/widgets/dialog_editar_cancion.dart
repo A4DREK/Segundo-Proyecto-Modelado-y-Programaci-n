@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart'; 
+import '../../../edicion/controlador/controlador_edicion.dart';
 import '../../../biblioteca/controlador/controlador_biblioteca.dart';
 
 Future<void> mostrarDialogoEdicionCancion(
   BuildContext context, 
   Rola cancion, 
-  BibliotecaControlador controlador,
 ) async {
+  final bibliotecaCtrl = context.read<BibliotecaControlador>();
+  final edicionCtrl = context.read<EdicionControlador>();
+
   final tituloCtrl = TextEditingController(text: cancion.title);
   final artistaCtrl = TextEditingController(text: cancion.performerName);
   final albumCtrl = TextEditingController(text: cancion.albumName);
@@ -20,9 +24,9 @@ Future<void> mostrarDialogoEdicionCancion(
 
   await showDialog(
     context: context,
-    builder: (context) {
+    builder: (dialogContext) {
       return StatefulBuilder(
-        builder:(context, setState) {
+        builder:(contextSB, setState) {
           return AlertDialog(
             title: const Text('Editar Canción'),
             content: SingleChildScrollView(
@@ -103,10 +107,12 @@ Future<void> mostrarDialogoEdicionCancion(
                 onPressed: () async {
                   if (formKey.currentState!.validate()) {
                     final yearValidado = int.tryParse(yearCtrl.text.trim());
-                    final int index = controlador.rolas.indexOf(cancion);
+
+                    final int index = bibliotecaCtrl  .rolas.indexOf(cancion);
 
                     // Enviar variables al controlador
-                    await controlador.editarCancion(
+                    await edicionCtrl.editarCancion(
+                      bibliotecaCtrl: bibliotecaCtrl,
                       index: index,
                       idRola: cancion.idRola,
                       nuevoTitulo: tituloCtrl.text.trim(),
