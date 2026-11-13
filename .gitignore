@@ -148,3 +148,7 @@ _minted*/
 # Archivo PDF compilado 
 # (Quita el '#' de la siguiente línea si NO quieres que el PDF se suba a GitHub)
 # *.pdf
+# Ejecutables compilados y empaquetados para Releases
+ejecutables/
+target/
+*.zip
