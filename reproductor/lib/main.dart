@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:macos_ui/macos_ui.dart';
 import 'sandbox.dart';
 import 'package:reproductor/src/rust/frb_generated.dart';
+import 'package:just_audio_media_kit/just_audio_media_kit.dart';
 
 /// This method initializes macos_window_utils and styles the window.
 Future<void> _configureMacosWindowUtils() async {
@@ -18,6 +19,10 @@ void main() async {
 
   if(!kIsWeb && Platform.isMacOS){
     await _configureMacosWindowUtils();
+  }
+
+  if (!kIsWeb && Platform.isLinux) {
+    JustAudioMediaKit.ensureInitialized(linux: true);
   }
   
   await RustLib.init();
