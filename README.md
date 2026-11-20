@@ -17,6 +17,9 @@ El núcleo de acceso a datos (`nucleo_dao`) y el extractor de metadatos (`minero
 Si descargaste los ejecutables directamente desde la sección **Releases** del repositorio, no necesitas instalar Rust ni Flutter:
 
 ### En Linux (`x86_64`)
+Requiere tener instalada la librería de audio `libmpv` en el sistema:
+* **Ubuntu / Debian:** `sudo apt install -y libmpv-dev`
+* **Fedora:** `sudo dnf install -y mpv-libs` (requiere RPM Fusion Free)
 
 ```bash
 # 1. Ejecutar el minero (CLI)
@@ -27,7 +30,6 @@ chmod +x minero-linux-x64
 tar -xzvf reproductor-linux-x64.tar.gz
 cd reproductor-linux-x64
 ./reproductor
-```
 
 ### En macOS (`arm64` / Universal)
 
