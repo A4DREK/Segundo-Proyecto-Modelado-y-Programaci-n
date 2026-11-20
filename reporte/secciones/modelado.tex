@@ -1,0 +1,70 @@
+\section{Modelado y Programación}
+% Recordar que esta es la parte más larga de todo el documento
+
+La primera cosa se tuvo a consideración para la realización de este proyecto fue, con qué lenguajes de programación se tendría que trabajar, se optó con la implementación de los mismos dos lenguajes de programación utilizados en el proyecto pasado, es decir, se utilizaron los lenguajes de \textbf{Rust} y el toolkit de \textbf{Flutter} (que utiliza el lenguaje de programación \textbf{Dart}), esto ya que existe cierta familiaridad, tanto con la sintaxis, como los paradigmas que implementan ambos lenguajes de programación, esto porque ya fueron implementados anteriormente.
+
+Antes de saber que bibliotecas utilizar en cada lenguaje de programación se realizó el desglose de responsabilidades, de tal forma que se pudo dividir en 3 sub-categorías, siendo estas:
+\begin{enumerate}
+    \item Minero
+    \item DAO (\textit{Data Access Object})
+    \item Reproductor (\textit{Interfaz Gráfica})
+\end{enumerate}
+%Colocar la cita de Flutter Rust Bridge
+Con base en esta división, se estructuró un espacio de trabajo (\textit{workspace}) compuesto por tres sub-proyectos dentro del repositorio principal: el DAO y el minero desarrollados en Rust, y la interfaz gráfica desarrollada en Flutter/Dart. Para comunicar ambas capas se integró \texttt{flutter\_rust\_bridge}, herramienta que genera los enlaces necesarios para invocar funciones de Rust de manera nativa y segura desde Dart. A continuación se muestra la estructura de directorios resultante:
+%Poner el diagrama de el directorio principal con los tres subdirectorios que son los sub-proyectos descritos
+
+A partir de aquí procedemos con el análisis de cada uno de los ``sub-proyectos'' que constituyen en su totalidad el reproductor.
+
+\subsection{DAO}
+Para la parte del DAO(Data Access Object), en inicio este término hace referencia al patrón de diseño, pero en términos del proyecto se opto por nombrar a este ``Sub-proyecto'' ya que la tarea que se debe de realizar es la de, tener las funciones necesarias para poder: Insertar, Modificar, Eliminar cada una de las entradas de la base de datos, esto para que no existan dichas funciones dentro del minero y de la interfaz gráfica y que solamente se manden a llamar en caso de ser requeridas, en esta parte se optó por que cada función de agregar uno de los parámetros de cada tabla, se devolviera el número generado de cada nuevo ID, y en las funciones que fueran de editar o de eliminar, cada una de las funciones debe de devolver un booleano, para confirmar que la acción realizada fue exitosa o hubo algún fallo. Esta parte del DAO, fue la más simple de las 3 ya que solo fue la implementación de las funciones descritas anteriormente, aunque en etapas más avanzadas del proyecto se tuvo que editar y agregar nuevas funciones que cumplieran con las necesidades que requería el proyecto en ese momento, cabe mencionar que en este archivo es donde se implementó la función para que el archivo .db se generara en la ruta de acuerdo con las especificaciones de cada sistema operativo, por ejemplo, en Linux se genera en la ruta \textit{.local/share} o en macOS se genera en la ruta \textit{Library/Application Support}.
+
+Además, que para los comandos que se requirieron dentro del SQL se tuvo que consultar que hacían los comandos SQL más utilizados, de los cuales se encuentran comandos como \textbf{SELECT}, \textbf{INSERT INTO}, \textbf{DELETE}, entre otros muchos, los cuales fueron investigados de una página de internet llamada W3Schools %insertar la fuente 
+
+\subsection{Minero}
+Para el Minero (en Inglés conocido como un Metadata Miner), se tuvieron los siguientes objetivos:
+\begin{enumerate}
+    \item Poder recorrer de forma recursiva el directorio y filtrar los archivos que tengan la etiqueta ID3V2.4 (File Crawler)
+    \item Poder extraer los metadatos de cada archivo que contenga las etiquetas antes mencionadas (ID3 Parser)
+    \item El Minero el cual es el que utiliza el File Crawler y el Parser para poder realizar sus funciones además de implementar las funciones del DAO para poder insertar las entradas en la base de datos
+    \item Y un visualizer para poder ejecutar el minero de forma independiente
+\end{enumerate}
+
+Una vez teniendo los objetivos esclarecidos, se inicio con la búsqueda de las bibliotecas que nos ayudaron con la creación del minero, de las cuales destacan varias, entre ellas se encuentran las bibliotecas de \textbf{dirs}, \textbf{walkdir}, \textbf{id3}, \textbf{rusqlite}.
+%Poner las referencias de los crates 
+
+Gracias a estas bibliotecas la implementación del minero resultó ser de las más sencillas para la parte de la implementación del minero, ya que pues la mayoría si no es que todas las funciones necesarias para poder armar el minero. Para poder hacer pruebas reales del minero se optó por descargar música .mp3 desde YouTube, para esto se hizo uso de la herramienta \textbf{yt-dlp} la cual permitió descargar los archivos con las etiquetas y datos necesarios para comprobar que el minero funcionara como debería. %Poner referencia y una imagen del minero funcionando
+
+\subsection{Interfaz Gráfica}
+Esta fue la parte más extensa de todo el proyecto, esto debido a que hubo varios errores en la toma de excepciones, y también se consumió mucho tiempo en el diseño de cómo debería quedar la interfaz gráfica, al final se opto por las siguientes características: 
+\begin{enumerate}
+    \item Que el centro de la aplicación tenga dos vistas principales, una de Grid, donde se pueda ver de forma general las portadas de los tracks, y otra vista en forma de lista donde además se tendrá un botón para poder editar las canciones
+    \item De ahí en esta última vista, el botón de editar debe de mostrar un pop-up en la parte inferior que se debe de indicar que se va a editar, el track o el performer, de aquí se tiene que especificar si el performer es una persona o un grupo, y dependiendo de la opción que se escoja, se edita con los parámetros que se requieran para dicho campo, dentro de la pestaña de editar el grupo, se tiene otro botón el cual permite el poder relacionar a las personas con los grupos, de esta forma, podemos buscar a una persona que está en cierto grupo y viceversa.
+    \item En la parte inferior se encuentra el reproductor, donde, en la parte izquierda aparece la portada del álbum de forma ``miniatura'', seguido de los botones, de play/pausa, avanzar, retroceder y una barra de reproducción para poder manejar el tiempo a disposición del usuario, y finalmente en la parte derecha un control deslizante para el manejo del volumen
+    \item En la parte superior se encontrará la barra de búsqueda la cual podrá filtrar a través de los parámetros de: 
+    \begin{enumerate}
+        \item Título
+        \item Artista
+        \item Álbum
+        \item Género
+        \item Año (year)
+    \end{enumerate}
+    los cuáles se encontraran en un botón en la derecha de la barra de búsqueda, además de un botón de poder borrar toda  la búsqueda realizada
+\end{enumerate}
+
+Para poder entender de que forma esta parte de la interfaz gráfica se integrará a los demás componentes, se tuvo que realizar un diagrama de modelo vista controlador, donde los ``participantes'' se pueden dividir como: 
+\begin{enumerate}
+    \item \textbf{Modelo:} Comprende las estructuras de (\texttt{Rola, RolaBD, MetadatosCancion}), la capa de la base de datos en SQLite, la cual es manejada por el DAO, el minero que extrae la metadata de los archivos con etiqueta ID3V2.4 y el motor de reproducción de Audio
+    \item \textbf{Controlador:} Agrupa las clases ``reactivas'' basadas en \texttt{ChangeNotifier}, aquí se encuentran los controladores de búsqueda, reproductor, biblioteca, encargadas de coordinar las llamadas hacia Rust, mantener el estado en memoria y notificar los cambios a la interfaz
+    \item \textbf{Vista:} Conformada por todos los \textit{widgets} y pantallas \textit{screens} construidos en Flutter, los cuales tienen el objetivo de renderizar la interfaz gráfica, y capturar las interacciones del usuario
+\end{enumerate}
+%Poner en bonito el diagramota donde aparece Paco :D 
+
+Cabe mencionar que, para la parte de la vista se optó por separar a cada una de las partes de la interfaz gráfica por cada una de sus funcionalidades (features), esto para tener dentro del proyecto los directorios de: 
+\begin{enumerate}
+    \item Biblioteca (Donde se encuentran las vistas de Grid y lista)
+    \item Buscador (Con sus respectivo botón con la opción de filtro)
+    \item Edición (Para poder seleccionar si editar el track o el artista/grupo y depende de cada opción tendrá sus propias características)
+    \item Reproductor (La barra de reproducción)
+    \item Layout Principal (Donde se juntaran los elementos de biblioteca, buscador, edición y reproductor)
+\end{enumerate} 
+Esto permitió una mejor separación de cada una de las responsabilidades de cada parte de la interfaz gráfica, aunque aún hay cosas que deben de tener una refactorización, por ejemplo, dentro del archivo de \textit{controlador\_biblioteca} el cual contiene la clase de Rola, el cual contiene de atributos todas las características que se pueden obtener de un archivo \textbf{ID3V2.4}, sin embargo esta clase se utiliza a lo largo de otros archivos dentro del reproductor, por lo que lo más sensato es poner dicha clase en un archivo a un nivel ``superior'' dentro de la jerarquía de los directorios, de esta forma, el resto de archivos puede tener acceso a dicha clase. 

@@ -1,0 +1,92 @@
+\section{Implementación}
+
+La materialización del diseño arquitectónico mencionado anteriormente se llevó a cabo dentro de un repositorio unificado bajo la estructura de un \textit{workspace} de Cargo, el cual integra los sub-proyectos de Rust (\texttt{minero} y \texttt{nucleo\_dao}), el esquema relacional (\texttt{base\_de\_datos}) y la aplicación de escritorio en Flutter (\texttt{reproductor}).
+
+\subsection{Tecnologías utilizadas}
+Para la construcción de cada uno de los sub-proyectos se seleccionaron las siguientes herramientas y bibliotecas: 
+
+\begin{itemize}
+    \item \textbf{Backend Rust}
+    \begin{itemize}
+        \item \texttt{rusqlite}: Controlador nativo para SQLite utilizado en \texttt{nucleo\_dao} para gestionar conexiones, transacciones ACID y restricciones de integridad referencial mediante \texttt{PRAGMA foreign\_keys = ON}.
+        \item \texttt{id3}: Biblioteca encargada de analizar las etiquetas \texttt{ID3v2.4} de los archivos de audio, permitiendo extraer metadatos textuales y portadas incrustadas (\textit{CoverFront} y \textit{Artist}).
+        \item \texttt{walkdir}: Utilizada en el módulo de exploración para recorrer directorios de forma recursiva y localizar archivos con extensión \texttt{.mp3} y cabecera válida \texttt{ID3}.
+        \item \texttt{dirs}: Permite resolver de forma multiplataforma las rutas estándar de datos de usuario para alojar el archivo \texttt{rolas.db} sin depender de rutas relativas del proyecto.\end{itemize}
+
+\item \textbf{Interoperabilidad (FFI):}
+    \begin{itemize}
+        \item \texttt{flutter\_rust\_bridge}: Herramienta de generación de enlaces (\textit{bindings}) que compila los \textit{crates} de Rust en una librería dinámica nativa (\texttt{rust\_lib\_reproductor}) y expone sus funciones de manera asíncrona y segura hacia Dart.\par
+    \end{itemize}
+
+\item \textbf{Interfaz gráfica, estado y reproducción (Flutter / Dart):}
+    \begin{itemize}
+        \item \texttt{macos\_ui}: Biblioteca principal de \textit{widgets} de escritorio que define la estética de ventanas, barras de herramientas y controles, complementada con componentes base de Flutter (\texttt{material} y \texttt{cupertino}).
+        \item \texttt{provider}: Gestor de estado reactivo basado en \texttt{ChangeNotifier}, empleado por los controladores de biblioteca, búsqueda, para poder actualizar la interfaz en tiempo real al filtrar los tracks o editar los datos de la base de datos SQLite
+        \item \texttt{just\_audio} (junto con \texttt{just\_audio\_media\_kit} y \texttt{media\_kit\_libs\_linux}): Motor encargado de la carga, decodificación y reproducción de los archivos \texttt{.mp3}, así como del control de progreso y volumen. En Linux se inicializa condicionalmente sobre \texttt{libmpv} para dotar de soporte nativo de audio al entorno de escritorio.
+        \item \texttt{file\_picker}: Componente multiplataforma utilizado para desplegar el explorador de archivos del sistema operativo y seleccionar los directorios de música a escanear.
+        \item \texttt{shared\_preferences}: Almacenamiento ligero clave-valor para conservar preferencias de la aplicación entre ejecuciones.
+    \end{itemize}
+    %Utilizar las referencias de su documentación oficial en cada uno de los puntos establecidos
+
+\subsubsection{Requerimientos del Sistema}
+
+El proyecto contempla dos modalidades de uso: la ejecución directa mediante los binarios publicados en la sección \textit{Releases} del repositorio, o la compilación manual a partir del código fuente.
+
+\begin{enumerate}
+    \item \textbf{Para ejecutar los binarios precompilados:}
+    \begin{itemize}
+        \item Este proyecto está dirigido a sistemas operativos \textbf{macOS} (binario universal compatible con arquitecturas Apple Silicon \texttt{arm64}  y \textbf{Linux} de 64 bits (\texttt{x86\_64}).
+        \item El esquema relacional (\texttt{rolas.sql}) y las librerías nativas de reproducción (\texttt{libmpv} mediante \texttt{media\_kit\_libs\_linux}) se empaquetan dentro de la distribución, por lo que no es necesario instalar Flutter, Rust ni gestores externos de bases de datos.
+        \item El archivo \texttt{rolas.db} se crea e inicializa automáticamente en la primera ejecución siguiendo las convenciones de cada sistema operativo: el estándar de Apple en macOS (\texttt{\textasciitilde/Library/Application Support/rolas/}) y la especificación XDG en Linux (\texttt{\textasciitilde/.local/share/rolas/}).
+    \end{itemize}
+
+    \item \textbf{Para compilar desde el código fuente:}
+    \begin{itemize}
+        \item \textit{Herramientas base:} Git, SDK de Flutter (con soporte de escritorio habilitado) y el \textit{toolchain} de Rust (\texttt{rustc}, \texttt{cargo}).
+        \item \textit{Dependencias en macOS:} Xcode Command Line Tools y CocoaPods para enlazar las bibliotecas nativas de Rust.
+        \item \textit{Dependencias de Linux:}
+        \begin{enumerate}
+            \item[a)] Compiladores y herramientas de construcción: \texttt{clang}, \texttt{cmake}, \texttt{ninja-build}, \texttt{pkg-config}, así como \texttt{g++} (Debian/Ubuntu) o \texttt{gcc-c++} (Fedora).
+            \item[b)] Cabeceras de desarrollo de GTK: \texttt{libgtk-3-dev} (Debian/Ubuntu) o \\ \texttt{gtk3-devel} (Fedora).
+            \item[c)] SQLite: \texttt{libsqlite3-dev} (Debian/Ubuntu) o \texttt{sqlite-devel} (Fedora).
+            \item[d)] Salida y decodificación de audio: \texttt{libasound2-dev} y \texttt{libmpv-dev} \\ (Debian/Ubuntu), o \texttt{alsa-lib-devel} y \texttt{mpv-devel} (Fedora, habilitando el repositorio RPM Fusion Free).
+            \item[e)] Diálogos nativos de selección de carpetas: \texttt{zenity}.
+            \item[f)] Soporte de verificación para \texttt{cargokit}: \texttt{perl-Digest-SHA} en Fedora (requerido por \texttt{shasum} al compilar el puente de Rust cuando Flutter se instala mediante Snap).
+        \end{enumerate}
+    \end{itemize}
+\end{enumerate}
+
+\subsection{Ejecución del programa}
+Ahora, se detallarán los comandos necesarios para poder clonar, probar, ejecutar y empaquetar el sistema desde la terminal: 
+
+\begin{enumerate}
+    \item \textbf{Clonar el repositorio:}
+\begin{lstlisting}
+git clone https://github.com/A4DREK/Segundo-Proyecto-Modelado-y-Programaci-n.git
+cd Segundo-Proyecto-Modelado-y-Programaci-n
+\end{lstlisting}
+    \item \textbf{Ejecutar las pruebas unitarias del backend (DAO y Minero):}
+\begin{lstlisting}
+cargo test --workspace
+\end{lstlisting}
+    \item \textbf{Ejecutar el minero de forma independiente (CLI):}
+    Permite escanear un directorio específico y mostrar en la CLI un log de que canciones aparecen.
+\begin{lstlisting}
+cargo run -p minero -- /ruta/a/carpeta/musica\end{lstlisting}
+    \item \textbf{Ejecutar la interfaz gráfica en modo desarrollo:}
+\begin{lstlisting}
+cd reproductor
+flutter pub get
+flutter run
+\end{lstlisting}
+    \item \textbf{Generar los ejecutables independientes (\textit{Release}):}
+\begin{lstlisting}
+# En macOS (genera build/macos/Build/Products/Release/reproductor.app)
+flutter build macos --release
+
+# En Linux (genera el paquete autocontenido en build/linux/x64/release/bundle/)
+flutter build linux --release
+\end{lstlisting}
+
+\end{enumerate}
+

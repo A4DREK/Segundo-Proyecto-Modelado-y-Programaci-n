@@ -1,0 +1,15 @@
+\section{Conclusiones}
+
+El desarrollo de este proyecto permitió el desarrollo de habilidades con relación a una introducción a los comandos de Bases de Datos SQL y una profundización del desarrollo del patrón Modelo-Vista-Controlador esto a través de las especificaciones dadas por el propio proyecto del reproductor de música.
+
+La elección de tener una arquitectura ``híbrida'' con dos lenguajes de programación (Rust y Flutter) permitió el desglose de responsabilidades y además, fue una decisión importante a la hora de equilibrar el rendimiento y el escribir la interfaz de usuario, esto ya que Rust, se caracteriza por la seguridad en memoria, y rapidez, esto por su sistema de ``ownership'', el cual se explicó en el proyecto pasado, y por su parte Flutter, al ser un toolkit destinado a la creación de interfaces gráficas multiplataforma, resultó poder crear la interfaz de una forma un poco más clara, además de poder ser reactiva y modular, esto para poder llevar acabo de buena forma el patron Modelo-Vista-Controlador, y tener un modelo basado en funcionalidades como se describió anteriormente, mientras que utilizar la herramienta de Flutter\_Rust\_Bridge, mostró ser una de las opciones más óptimas para poder integrar estos dos lenguajes de programación, esto gracias a que es posible invocar funciones de Rust de forma asíncrona sin comprometer la fluidez de la interfaz gráfica. 
+
+Asimismo, la separación del sistema en tres módulos independientes (\texttt{minero}, \texttt{nucleo\_dao} y \texttt{reproductor}) aportó ventajas clave en mantenimiento y pruebas:
+\begin{itemize}
+    \item El encapsulamiento de las consultas en el patrón \textbf{DAO} evitó la duplicación de código SQL y permitió validar cada operación de persistencia mediante pruebas unitarias automatizadas (\texttt{cargo test}) antes de integrarla con la interfaz.
+    \item El diseño del \textbf{minero} como componente autónomo con salida tabular en consola (\textit{visualizer}) posibilitó depurar la extracción de metadatos de manera aislada y cumplir con el requisito de contar con ejecutables independientes.
+    \item La edición de registros directamente sobre la base de datos SQLite aseguró el cumplimiento de la restricción no destructiva del sistema, permitiendo corregir información de canciones, artistas, grupos y relaciones sin alterar los archivos de audio originales.
+    \item El uso de rutas estándar dependientes del sistema operativo y la incrustación del esquema SQL dentro del binario garantizaron la portabilidad de los ejecutables tanto en \textbf{macOS} como en \textbf{Linux}.
+\end{itemize}
+
+Finalmente, como trabajo futuro y oportunidades de mejora se identifica la refactorización de las clases de dominio compartidas (como la clase \texttt{Rola}) hacia una capa superior en Flutter para reducir el acoplamiento entre controladores, la ampliación del minero para soportar formatos adicionales sin pérdida (como \texttt{FLAC} o \texttt{WAV}) y la incorporación de listas de reproducción personalizadas persistentes en la base de datos.
