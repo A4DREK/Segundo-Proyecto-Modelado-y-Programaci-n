@@ -20,11 +20,11 @@ Para la construcción de cada uno de los sub-proyectos se seleccionaron las sigu
 
 \item \textbf{Interfaz gráfica, estado y reproducción (Flutter / Dart):}
     \begin{itemize}
-        \item \texttt{macos\_ui}: Biblioteca principal de \textit{widgets} de escritorio que define la estética de ventanas, barras de herramientas y controles, complementada con componentes base de Flutter (\texttt{material} y \texttt{cupertino}).
-        \item \texttt{provider}: Gestor de estado reactivo basado en \texttt{ChangeNotifier}, empleado por los controladores de biblioteca, búsqueda, para poder actualizar la interfaz en tiempo real al filtrar los tracks o editar los datos de la base de datos SQLite
-        \item \texttt{just\_audio} (junto con \texttt{just\_audio\_media\_kit} y \texttt{media\_kit\_libs\_linux}): Motor encargado de la carga, decodificación y reproducción de los archivos \texttt{.mp3}, así como del control de progreso y volumen. En Linux se inicializa condicionalmente sobre \texttt{libmpv} para dotar de soporte nativo de audio al entorno de escritorio.
-        \item \texttt{file\_picker}: Componente multiplataforma utilizado para desplegar el explorador de archivos del sistema operativo y seleccionar los directorios de música a escanear.
-        \item \texttt{shared\_preferences}: Almacenamiento ligero clave-valor para conservar preferencias de la aplicación entre ejecuciones.
+        \item \texttt{macos\_ui}: Biblioteca principal de \textit{widgets} de escritorio que define la estética de ventanas, barras de herramientas y controles, complementada con componentes base de Flutter (\texttt{material} y \texttt{cupertino}).\cite{pubdev_cupertinotabview}
+        \item \texttt{provider}: Gestor de estado reactivo basado en \texttt{ChangeNotifier}, empleado por los controladores de biblioteca, búsqueda, para poder actualizar la interfaz en tiempo real al filtrar los tracks o editar los datos de la base de datos SQLite \cite{flutter_widget_previewer}
+        \item \texttt{just\_audio} (junto con \texttt{just\_audio\_media\_kit} y \texttt{media\_kit\_libs\_linux}): Motor encargado de la carga, decodificación y reproducción de los archivos \texttt{.mp3}, así como del control de progreso y volumen. En Linux se inicializa condicionalmente sobre \texttt{libmpv} para dotar de soporte nativo de audio al entorno de escritorio.\cite{pubdev_file_picker,pubdev_macos_ui_package,pubdev_just_audio,pubdev_media_kit_libs_linux}
+        \item \texttt{file\_picker}: Componente multiplataforma utilizado para desplegar el explorador de archivos del sistema operativo y seleccionar los directorios de música a escanear.\cite{pubdev_file_picker}
+        \item \texttt{shared\_preferences}: Almacenamiento ligero clave-valor para conservar preferencias de la aplicación entre ejecuciones.\cite{share}
     \end{itemize}
     %Utilizar las referencias de su documentación oficial en cada uno de los puntos establecidos
 
