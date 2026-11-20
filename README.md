@@ -20,6 +20,11 @@ Si descargaste los ejecutables directamente desde la sección **Releases** del r
 Requiere tener instalada la librería de audio `libmpv` en el sistema:
 * **Ubuntu / Debian:** `sudo apt install -y libmpv-dev`
 * **Fedora:** `sudo dnf install -y mpv-libs` (requiere RPM Fusion Free)
+> **NOTA
+> * Si la ventana tarda en responder o se congela al redimensionar en pantallas de alta resolución (Wayland), ejecútalo forzando X11:
+>   ```bash
+>   GDK_BACKEND=x11 ./reproductor
+>   ```
 
 ```bash
 # 1. Ejecutar el minero (CLI)
