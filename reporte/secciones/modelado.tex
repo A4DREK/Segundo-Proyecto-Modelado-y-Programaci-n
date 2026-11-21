@@ -10,15 +10,29 @@ Antes de saber que bibliotecas utilizar en cada lenguaje de programación se rea
     \item Reproductor (\textit{Interfaz Gráfica})
 \end{enumerate}
 %Colocar la cita de Flutter Rust Bridge
-Con base en esta división, se estructuró un espacio de trabajo (\textit{workspace}) compuesto por tres sub-proyectos dentro del repositorio principal: el DAO y el minero desarrollados en Rust, y la interfaz gráfica desarrollada en Flutter/Dart. Para comunicar ambas capas se integró \texttt{flutter\_rust\_bridge}, herramienta que genera los enlaces necesarios para invocar funciones de Rust de manera nativa y segura desde Dart. A continuación se muestra la estructura de directorios resultante:
+Con base en esta división, se estructuró un espacio de trabajo (\textit{workspace}) compuesto por tres sub-proyectos dentro del repositorio principal: el DAO y el minero desarrollados en Rust, y la interfaz gráfica desarrollada en Flutter/Dart. Para comunicar ambas capas se integró \texttt{flutter\_rust\_bridge}, herramienta que genera los enlaces necesarios para invocar funciones de Rust de manera nativa y segura desde Dart.\cite{koreledger_frb_2024} A continuación se muestra la estructura de directorios resultante:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.68\linewidth]{Diagrama Sub-proyectos.png}
+    \caption{Organización de los directorios del proyecto}
+    \label{fig:diagrama-subproyectos}
+\end{figure}
 %Poner el diagrama de el directorio principal con los tres subdirectorios que son los sub-proyectos descritos
 
 A partir de aquí procedemos con el análisis de cada uno de los ``sub-proyectos'' que constituyen en su totalidad el reproductor.
 
 \subsection{DAO}
 Para la parte del DAO(Data Access Object), en inicio este término hace referencia al patrón de diseño, pero en términos del proyecto se opto por nombrar a este ``Sub-proyecto'' ya que la tarea que se debe de realizar es la de, tener las funciones necesarias para poder: Insertar, Modificar, Eliminar cada una de las entradas de la base de datos, esto para que no existan dichas funciones dentro del minero y de la interfaz gráfica y que solamente se manden a llamar en caso de ser requeridas, en esta parte se optó por que cada función de agregar uno de los parámetros de cada tabla, se devolviera el número generado de cada nuevo ID, y en las funciones que fueran de editar o de eliminar, cada una de las funciones debe de devolver un booleano, para confirmar que la acción realizada fue exitosa o hubo algún fallo. Esta parte del DAO, fue la más simple de las 3 ya que solo fue la implementación de las funciones descritas anteriormente, aunque en etapas más avanzadas del proyecto se tuvo que editar y agregar nuevas funciones que cumplieran con las necesidades que requería el proyecto en ese momento, cabe mencionar que en este archivo es donde se implementó la función para que el archivo .db se generara en la ruta de acuerdo con las especificaciones de cada sistema operativo, por ejemplo, en Linux se genera en la ruta \textit{.local/share} o en macOS se genera en la ruta \textit{Library/Application Support}.
+Además, al inicio el proyecto se nos fue proporcionado el archivo.sql el cual ayudo a la creación del archivo .db, para poder almacenar los datos de las canciones, de tal forma que se presenta la estructura de las tablas de la base de datos a continuación: 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.68\linewidth]{SQL Rolas.png}
+    \caption{Representación de la base de datos a través de ChartDB}
+    \label{fig:Base_de_datos}
+\end{figure}
 
-Además, que para los comandos que se requirieron dentro del SQL se tuvo que consultar que hacían los comandos SQL más utilizados, de los cuales se encuentran comandos como \textbf{SELECT}, \textbf{INSERT INTO}, \textbf{DELETE}, entre otros muchos, los cuales fueron investigados de una página de internet llamada W3Schools %insertar la fuente 
+Además, que para los comandos que se requirieron dentro del SQL se tuvo que consultar que hacían los comandos SQL más utilizados, de los cuales se encuentran comandos como \textbf{SELECT}, \textbf{INSERT INTO}, \textbf{DELETE}, entre otros muchos, los cuales fueron investigados de una página de internet llamada W3Schools \cite{w3schools_sql}%insertar la fuente 
 
 \subsection{Minero}
 Para el Minero (en Inglés conocido como un Metadata Miner), se tuvieron los siguientes objetivos:
@@ -29,10 +43,17 @@ Para el Minero (en Inglés conocido como un Metadata Miner), se tuvieron los sig
     \item Y un visualizer para poder ejecutar el minero de forma independiente
 \end{enumerate}
 
-Una vez teniendo los objetivos esclarecidos, se inicio con la búsqueda de las bibliotecas que nos ayudaron con la creación del minero, de las cuales destacan varias, entre ellas se encuentran las bibliotecas de \textbf{dirs}, \textbf{walkdir}, \textbf{id3}, \textbf{rusqlite}.
+Una vez teniendo los objetivos esclarecidos, se inicio con la búsqueda de las bibliotecas que nos ayudaron con la creación del minero, de las cuales destacan varias, entre ellas se encuentran las bibliotecas de \textbf{dirs}, \textbf{walkdir}, \textbf{id3}, \textbf{rusqlite}.\cite{gallant_walkdir,polyfloyd_rust_id3,rusqlite_docs}
 %Poner las referencias de los crates 
 
-Gracias a estas bibliotecas la implementación del minero resultó ser de las más sencillas para la parte de la implementación del minero, ya que pues la mayoría si no es que todas las funciones necesarias para poder armar el minero. Para poder hacer pruebas reales del minero se optó por descargar música .mp3 desde YouTube, para esto se hizo uso de la herramienta \textbf{yt-dlp} la cual permitió descargar los archivos con las etiquetas y datos necesarios para comprobar que el minero funcionara como debería. %Poner referencia y una imagen del minero funcionando
+Gracias a estas bibliotecas la implementación del minero resultó ser de las más sencillas para la parte de la implementación del minero, ya que pues la mayoría si no es que todas las funciones necesarias para poder armar el minero. Para poder hacer pruebas reales del minero se optó por descargar música .mp3 desde YouTube, para esto se hizo uso de la herramienta \textbf{yt-dlp} la cual permitió descargar los archivos con las etiquetas y datos necesarios para comprobar que el minero funcionara como debería.
+\cite{ytdlp_github} %Poner referencia y una imagen del minero funcionando
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.68\linewidth]{Minero en funcionamiento.png}
+    \caption{Captura del minero funcionando}
+    \label{fig:minero_trabajandos}
+\end{figure}
 
 \subsection{Interfaz Gráfica}
 Esta fue la parte más extensa de todo el proyecto, esto debido a que hubo varios errores en la toma de excepciones, y también se consumió mucho tiempo en el diseño de cómo debería quedar la interfaz gráfica, al final se opto por las siguientes características: 
@@ -57,6 +78,12 @@ Para poder entender de que forma esta parte de la interfaz gráfica se integrar�
     \item \textbf{Controlador:} Agrupa las clases ``reactivas'' basadas en \texttt{ChangeNotifier}, aquí se encuentran los controladores de búsqueda, reproductor, biblioteca, encargadas de coordinar las llamadas hacia Rust, mantener el estado en memoria y notificar los cambios a la interfaz
     \item \textbf{Vista:} Conformada por todos los \textit{widgets} y pantallas \textit{screens} construidos en Flutter, los cuales tienen el objetivo de renderizar la interfaz gráfica, y capturar las interacciones del usuario
 \end{enumerate}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.68\linewidth]{DiagramaMVC.drawio.png}
+    \caption{Modelo-Vista-Controlador}
+    \label{fig:diagrama_MVC}
+\end{figure}
 %Poner en bonito el diagramota donde aparece Paco :D 
 
 Cabe mencionar que, para la parte de la vista se optó por separar a cada una de las partes de la interfaz gráfica por cada una de sus funcionalidades (features), esto para tener dentro del proyecto los directorios de: 

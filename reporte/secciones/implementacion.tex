@@ -24,7 +24,7 @@ Para la construcción de cada uno de los sub-proyectos se seleccionaron las sigu
         \item \texttt{provider}: Gestor de estado reactivo basado en \texttt{ChangeNotifier}, empleado por los controladores de biblioteca, búsqueda, para poder actualizar la interfaz en tiempo real al filtrar los tracks o editar los datos de la base de datos SQLite \cite{flutter_widget_previewer}
         \item \texttt{just\_audio} (junto con \texttt{just\_audio\_media\_kit} y \texttt{media\_kit\_libs\_linux}): Motor encargado de la carga, decodificación y reproducción de los archivos \texttt{.mp3}, así como del control de progreso y volumen. En Linux se inicializa condicionalmente sobre \texttt{libmpv} para dotar de soporte nativo de audio al entorno de escritorio.\cite{pubdev_file_picker,pubdev_macos_ui_package,pubdev_just_audio,pubdev_media_kit_libs_linux}
         \item \texttt{file\_picker}: Componente multiplataforma utilizado para desplegar el explorador de archivos del sistema operativo y seleccionar los directorios de música a escanear.\cite{pubdev_file_picker}
-        \item \texttt{shared\_preferences}: Almacenamiento ligero clave-valor para conservar preferencias de la aplicación entre ejecuciones.\cite{share}
+        \item \texttt{shared\_preferences}: Almacenamiento ligero clave-valor para conservar preferencias de la aplicación entre ejecuciones.
     \end{itemize}
     %Utilizar las referencias de su documentación oficial en cada uno de los puntos establecidos
 
@@ -36,7 +36,7 @@ El proyecto contempla dos modalidades de uso: la ejecución directa mediante los
     \item \textbf{Para ejecutar los binarios precompilados:}
     \begin{itemize}
         \item Este proyecto está dirigido a sistemas operativos \textbf{macOS} (binario universal compatible con arquitecturas Apple Silicon \texttt{arm64}  y \textbf{Linux} de 64 bits (\texttt{x86\_64}).
-        \item El esquema relacional (\texttt{rolas.sql}) y las librerías nativas de reproducción (\texttt{libmpv} mediante \texttt{media\_kit\_libs\_linux}) se empaquetan dentro de la distribución, por lo que no es necesario instalar Flutter, Rust ni gestores externos de bases de datos.
+        \item El esquema relacional (\texttt{rolas.sql}) y las librerías nativas de reproducción (\texttt{libmpv} mediante \texttt{media\_kit\_libs\_linux}) se empaquetan dentro de la distribución, por lo que no es necesario instalar Flutter, Rust ni gestores externos de bases de datos.(Cabe mencionar que es necesario instalar libmpv-dev (Ubuntu/Debian) o mpv-libs (Fedora) en el sistema para que funcione el programa)
         \item El archivo \texttt{rolas.db} se crea e inicializa automáticamente en la primera ejecución siguiendo las convenciones de cada sistema operativo: el estándar de Apple en macOS (\texttt{\textasciitilde/Library/Application Support/rolas/}) y la especificación XDG en Linux (\texttt{\textasciitilde/.local/share/rolas/}).
     \end{itemize}
 
